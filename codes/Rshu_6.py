@@ -10,7 +10,7 @@ import re
 import time
 from traceback import format_exc
 
-from node_vm2 import VM
+from node_vm2 import NodeVM, VM
 from requests.packages import urllib3
 
 from loguru import logger
@@ -59,10 +59,9 @@ class Rshu6:
 
     def process_ts(self):
         ts_res = self.session.get(self.ts_url, proxies=self.proxy).text
-        self.full_code = self.ev + self.js_code + ';' + ts_res + """;function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};"""
-        with VM() as vm:
-            vm.run(self.full_code)
-            self.cookie_80t = vm.run("get_cookie()")
+        self.full_code = self.ev + self.js_code + ';' + ts_res + """;function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};module.exports = {get_cookie}"""
+        with NodeVM.code(self.full_code) as module:
+            self.cookie_80t = module.call_member("get_cookie")
 
     def verify(self):
         if isinstance(self.js_code, dict):
@@ -130,7 +129,7 @@ if __name__ == '__main__':
     """
     cookie_s = 'Cc2838679FS'
     cookie_t = 'Cc2838679FT'
-    base_url = 'https://book.qidian.com/ajax/chapterReview/recommendBooks'
+    base_url = 'https://book.qidian.com/info/1031493614/'
     ts_url = 'https://book.qidian.com/b3c79ec/f890b6f5917/6da34174.js'
     temp_gx = run(base_url, ts_url, cookie_s, cookie_t)
     logger.info(temp_gx)

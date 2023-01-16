@@ -42,7 +42,7 @@ def test_5():
 def test_6():
     cookie_s = 'Cc2838679FS'
     cookie_t = 'Cc2838679FT'
-    base_url = 'https://book.qidian.com/ajax/chapterReview/recommendBooks'
+    base_url = 'https://book.qidian.com/info/1031493614/'
     ts_url = 'https://book.qidian.com/b3c79ec/f890b6f5917/6da34174.js'
     data = {
         "url": base_url,
@@ -70,7 +70,7 @@ def test_vmp():
 
 if __name__ == '__main__':
     # test_4()
-    test_5()
+    # test_5()
     test_6()
     # vmp_res = test_vmp()
     # hg_url = 'http://credit.customs.gov.cn/ccppserver/ccpp/queryList'
