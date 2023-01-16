@@ -20,22 +20,37 @@ def test_4():
         "t": cookie_t,
         "proxy": None
     }
-    res = requests.post('http://192.168.9.3:5602/rs/4', data=data)
+    res = requests.post('http://175.178.127.140:5602/rs/4', data=data)
     print(res.json())
 
 
 def test_5():
-    cookie_s = 'FSSBBIl1UgzbN7NS'
-    cookie_t = 'FSSBBIl1UgzbN7NT'
-    base_url = 'http://www.xiantao.gov.cn/zwgk/zfxxgk/zfwjk/gfwj/'
-    ts_url = 'http://www.xiantao.gov.cn/4QbVtADbnLVIc/c.FxJzG50F.b795048.js'
+    cookie_s = 'FSSBBIl1UgzbN7NO'
+    cookie_t = 'FSSBBIl1UgzbN7NP'
+    base_url = 'https://www.shhuangpu.gov.cn/zw/009002/009002002/listIndex2.html'
+    ts_url = 'https://www.shhuangpu.gov.cn/4QbVtADbnLVIc/c.FxJzG50F.d5db026.js'
     data = {
         "url": base_url,
         "ts_url": ts_url,
         "s": cookie_s,
         "t": cookie_t
     }
-    res = requests.post('http://192.168.9.3:5602/rs/5', data=data)
+    res = requests.post('http://175.178.127.140:5602/rs/5', data=data)
+    print(res.json())
+
+
+def test_6():
+    cookie_s = 'Cc2838679FS'
+    cookie_t = 'Cc2838679FT'
+    base_url = 'https://book.qidian.com/ajax/chapterReview/recommendBooks'
+    ts_url = 'https://book.qidian.com/b3c79ec/f890b6f5917/6da34174.js'
+    data = {
+        "url": base_url,
+        "ts_url": ts_url,
+        "s": cookie_s,
+        "t": cookie_t
+    }
+    res = requests.post('http://175.178.127.140:5602/rs/6', data=data)
     print(res.json())
 
 
@@ -48,20 +63,21 @@ def test_vmp():
         "s": cookie_s,
         "t": cookie_t,
     }
-    res = requests.post('http://192.168.9.3:5602/rs/vmp', data=data)
+    res = requests.post('http://175.178.127.140:5602/rs/vmp', data=data)
     print(res.json())
     return res.json()
 
 
 if __name__ == '__main__':
     # test_4()
-    # test_5()
-    vmp_res = test_vmp()
-    hg_url = 'http://credit.customs.gov.cn/ccppserver/ccpp/queryList'
-    hg_json = {"manaType": "0", "apanage": "", "depCodeChg": "", "curPage": "2", "pageSize": 20}
-    headers = {
-        "Cookie": vmp_res["data"]["cookie"],
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
-    }
-    hg_res = requests.post(hg_url, json=hg_json, headers=headers)
-    print(hg_res.text)
+    test_5()
+    test_6()
+    # vmp_res = test_vmp()
+    # hg_url = 'http://credit.customs.gov.cn/ccppserver/ccpp/queryList'
+    # hg_json = {"manaType": "0", "apanage": "", "depCodeChg": "", "curPage": "2", "pageSize": 20}
+    # headers = {
+    #     "Cookie": vmp_res["data"]["cookie"],
+    #     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
+    # }
+    # hg_res = requests.post(hg_url, json=hg_json, headers=headers)
+    # print(hg_res.text)

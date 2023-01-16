@@ -17,6 +17,15 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 LOGGER = logging.getLogger(__name__)
 
 
+@app.route('/')
+def index():
+    """
+    get home page, you can define your own templates
+    :return:
+    """
+    return '<h2>Welcome to RS Decrypt System</h2>'
+
+
 @app.route('/rs/4', methods=['POST', 'GET'])
 def rs4_serer():
     if request.method == 'POST':
