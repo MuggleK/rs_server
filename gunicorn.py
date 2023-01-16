@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Project : flaskProject
 # @Time    : 2022/6/23 10:41
-# @Author  : Changchuan.Pei
+# @Author  : MuggleK
 # @File    : gunicorn.py
 
 import os

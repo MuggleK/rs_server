@@ -1,37 +1,53 @@
 # -*- coding: utf-8 -*-
 # @Project : rs_server
 # @Time    : 2022/3/19 14:56
-# @Author  : Changchuan.Pei
+# @Author  : MuggleK
 # @File    : log.py
-
 import time
+
 from loguru import logger
-import os
 
-t = time.strftime("%Y_%m_%d")
-path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), "logs")
+time_format = time.strftime("%Y_%m_%d")
+log_format = "{time:YYYY-MM-DD HH:mm:ss}|{level}| {name}:{function}:{line}| {message}"
 
 
-class Logging:
+class Logging(object):
+    """
+    Usage::
+
+        # >>>
+        # >>> logger = Logging('logs')
+        # >>> logger.info('Logging Example')
+        # 2022-01-20 17:27:32.194 | INFO     | __main__:info:149 - Logging Example
+        # >>>
+    """
+
     __instance = None
-    logger.add(f"{path}/log_{t}_info.log", encoding="utf-8", enqueue=True, retention="1 months", level="INFO", format="{time:YYYY-MM-DD HH:mm:ss}|{level}| {name}:{function}:{line}| {message}")
-    logger.add(f"{path}/log_{t}_error.log", encoding="utf-8", enqueue=True, retention="10 days", level="ERROR", format="{time:YYYY-MM-DD HH:mm:ss}|{level}| {name}:{function}:{line}| {message}")
-    logger.add(f"{path}/log_{t}_debug.log", encoding="utf-8", enqueue=True, retention="10 days", level="DEBUG", format="{time:YYYY-MM-DD HH:mm:ss}|{level}| {name}:{function}:{line}| {message}")
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, log_path="logs", *args, **kwargs):
         if not cls.__instance:
             cls.__instance = super(Logging, cls).__new__(cls, *args, **kwargs)
 
         return cls.__instance
 
-    def info(self, msg):
+    def __init__(self, log_path, expire_date="10 days"):
+        logger.add(f"{log_path}/log_{time_format}_info.log", encoding="utf-8", enqueue=True, retention="1 months", level="INFO", format=log_format)
+        logger.add(f"{log_path}/log_{time_format}_error.log", encoding="utf-8", enqueue=True, retention=expire_date, level="ERROR", format=log_format)
+        logger.add(f"{log_path}/log_{time_format}_debug.log", encoding="utf-8", enqueue=True, retention=expire_date, level="DEBUG", format=log_format)
+        logger.add(f"{log_path}/log_{time_format}_waring.log", encoding="utf-8", enqueue=True, retention=expire_date, level="WARNING", format=log_format)
+
+    @staticmethod
+    def info(msg):
         return logger.info(msg)
 
-    def debug(self, msg):
+    @staticmethod
+    def debug(msg):
         return logger.debug(msg)
 
-    def warning(self, msg):
+    @staticmethod
+    def warning(msg):
         return logger.warning(msg)
 
-    def error(self, msg):
+    @staticmethod
+    def error(msg):
         return logger.error(msg)

@@ -5604,6 +5604,21 @@ at <anonymous>:1:19";
         if(x=='body'){
             return [window.document,{}]
         }
+        if (x=="meta"){
+            return [{"getAttribute":function getAttribute(params) {
+                if(params == "r"){
+                    return "m";
+                }
+            }}, {
+                "getAttribute":function getAttribute(params) {
+                    if(params == "r"){
+                        return "m";
+                    }
+                },
+                "content": "动态content",
+                "parentNode": {removeChild:function(){}}
+        }]
+        }
         return []
     }; safefunction(documentPrototype.getElementsByTagName);
     documentPrototype.getElementsByTagNameNS = function getElementsByTagNameNS() {debugger;}; safefunction(documentPrototype.getElementsByTagNameNS);

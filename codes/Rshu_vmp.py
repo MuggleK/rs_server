@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 # @Project : rs_server
 # @Time    : 2022/6/13 17:06
-# @Author  : Changchuan.Pei
+# @Author  : MuggleK
 # @File    : Rshu_vmp.py
 
-import execjs
+import cchardet
 import requests
 import re
 import time
 from urllib.parse import urljoin
 from traceback import format_exc
 from requests.packages import urllib3
+from node_vm2 import VM
 
 from loguru import logger
 from utils.proxy import get_proxies
@@ -30,60 +31,38 @@ class RshuVmp:
         self.session = requests.session()
         self.session.headers = {
             'Cache-Control': 'no-cache',
+            'Connection': 'close',
             'User-Agent': UserAgent()
         }
         self.proxy = proxy
-        self.ev = rs_ev
         self.url = url
         self.cookie_80s = None
         self.cookie_80t = None
-        self.full_code = None
-        self.content, self.js_code, self.html_code = self.get_content()
+        self.content, self.js_code = self.get_content()
         if self.js_code:
-            self.new_code = self.get_ts()
             self.process_content()
 
     def get_content(self):
         res = self.session.get(self.url, verify=False, proxies=self.proxy, headers=self.session.headers, timeout=30)
-        res.encoding = res.apparent_encoding
+        res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
+
         if res.status_code == 202 or res.status_code == 412:
             self.cookie_80s = res.cookies.get_dict().get(self.cookie_name_1)
-            content = re.findall('<meta content="(.*?)">', res.text)[0].split('"')[0]
-            js_url = urljoin(self.url, re.findall(r"""<script type="text/javascript" charset="utf-8" src="(.*?)" r='m'>""", res.text)[0])
-            js_code = self.session.get(js_url, verify=False, proxies=self.proxy, headers=self.session.headers, timeout=30).text
-            return content, js_code, res.text
-        return res.text, None, None
+            content = re.findall('<meta content="(.*?)">', res_text)[0].split('"')[0]
+            js_url = urljoin(self.url, re.findall(r"""<script type="text/javascript" charset="utf-8" src="(.*?)" r='m'>""", res_text)[0])
+            ts_code = re.findall(r"<script .*?>(.*?)</script>", res_text)[1]
+            js_code = ts_code + self.session.get(js_url, verify=False, proxies=self.proxy, headers=self.session.headers, timeout=30).text
+            return content, js_code
 
-    def get_ts(self):
-        ts_code = self.ev + re.findall(r"<script .*?>(.*?)</script>", self.html_code)[1]
-        try:
-            temp_flag = re.findall(r'(.{4}=_\$.{2}\[_\$.{2}\[\d{2}\]\]\(_\$.{2},(.*?)\))', self.js_code)[0]
-        except:
-            temp_flag = re.findall(r'(.{4}=_\$.{2}\.call\(.*?,(.*?)\))', self.js_code)[0]
-        new_js = """window.new_code = %s;break""" % temp_flag[1]
-        self.js_code = self.js_code.replace(temp_flag[0].replace('{', ''), new_js)
-        try:
-            """处理将$_ts置空的情况"""
-            ts_convert = re.findall("\{_\$.{2}\['\$_ts'\]=\{\};", self.js_code)[0]
-            self.js_code = self.js_code.replace(ts_convert, '{return;')
-        except:
-            pass
-        get_ts = """;function get_newcode(){return window.new_code;};"""
-        self.js_code = ts_code + self.js_code + get_ts
-        try:
-            ctx = execjs.compile(self.js_code)
-            new_code = ctx.call("get_newcode")
-        except:
-            ctx = execjs.compile(self.js_code.encode('utf-8').decode('gbk', errors='ignore'))
-            new_code = ctx.call("get_newcode")
-        return new_code
+        return res.text, None
 
     def process_content(self):
-        env_content = re.findall('"content": "(.*?)",', self.ev)[0]
-        self.full_code = self.js_code.replace('window = global;document={};', self.ev.replace(env_content, self.content)) + self.new_code + """var get_cookie = function(){return document.cookie.split(';')[0].split('=')[1];};"""
-        self.full_code = self.full_code.replace(env_content, self.content)
-        ctx = execjs.compile(self.full_code)
-        self.cookie_80t = ctx.call('get_cookie')
+        full_code = rs_ev.replace("动态content", self.content) + self.js_code + """
+        function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};
+        """
+        with VM() as vm:
+            vm.run(full_code)
+            self.cookie_80t = vm.run('get_cookie()')
 
     def verify(self):
         if not self.js_code:
@@ -92,10 +71,11 @@ class RshuVmp:
             'cookie': f'{self.cookie_name_1}={self.cookie_80s};{self.cookie_name_2}={self.cookie_80t}'
         })
         res = self.session.get(url=self.url, headers=self.session.headers, proxies=self.proxy)
-        res.encoding = res.apparent_encoding
+        res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
+
         if res.status_code == 200:
             logger.info(f'{self.url}：状态码{res.status_code}，Cookie可用')
-            return res.text, self.session.headers.get('cookie')
+            return res_text, self.session.headers.get('cookie')
         else:
             logger.debug(f'状态码{res.status_code},Cookie不可用')
 
@@ -124,11 +104,3 @@ def run(base_url, cookie_s, cookie_t, proxy=None):
         'code': 500,
         'data': {'html': None}
     }
-
-
-if __name__ == '__main__':
-    cookie_s = 'VIP9lLgDcAL2S'
-    cookie_t = 'VIP9lLgDcAL2T'
-    base_url = 'http://beijing.chinatax.gov.cn/bjswj/c105358/hot.shtml'
-    res = run(base_url, cookie_s, cookie_t)
-    print(res)

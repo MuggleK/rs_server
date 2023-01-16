@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 # @Project : rs_server
 # @Time    : 2022/3/19 14:56
-# @Author  : Changchuan.Pei
+# @Author  : MuggleK
 # @File    : Rshu_5.py
 
-import execjs
+import cchardet
 import requests
 import re
 import time
 from traceback import format_exc
+from node_vm2 import VM
 from requests.packages import urllib3
 
 from loguru import logger
@@ -30,11 +31,10 @@ class Rshu5:
         self.session = requests.session()
         self.session.headers = {
             'Cache-Control': 'no-cache',
+            'Connection': 'close',
             'User-Agent': UserAgent()
         }
         self.proxy = proxy
-        if ts_url:
-            self.ev = rs_ev
         self.url = url
         self.ts_url = ts_url
         self.cookie_80s = None
@@ -42,51 +42,26 @@ class Rshu5:
         self.full_code = None
         self.content, self.js_code = self.get_content()
         if self.js_code:
-            self.new_code = self.get_ts()
             self.process_content()
 
     def get_content(self):
         res = self.session.get(self.url, verify=False, proxies=self.proxy, headers=self.session.headers, timeout=30)
-        res.encoding = res.apparent_encoding
+        res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
         if res.status_code == 202 or res.status_code == 412:
             self.cookie_80s = res.cookies.get_dict().get(self.cookie_name_1)
-            content = re.findall('<meta content="(.*?)">', res.text)[0]
-            js_code = re.findall(r'(\(function\(\).*\(\))</script>', res.text)[0]
-            return content, js_code
-        return res.text, None
-
-    def get_ts(self):
-        res = self.session.get(self.ts_url, proxies=self.proxy)
-        ts_code = "window = global;document={};" + res.text
-        try:
-            temp_flag = re.findall(r'(.{4}=_\$.{2}\[_\$.{2}\[\d{2}\]\]\(_\$.{2},(.*?)\))', self.js_code)[0]
-        except:
-            temp_flag = re.findall(r'(.{4}=_\$.{2}\.call\(.*?,(.*?)\))', self.js_code)[0]
-        new_js = """window.new_code = %s;break""" % temp_flag[1]
-        self.js_code = self.js_code.replace(temp_flag[0].replace('{', ''), new_js)
-        try:
-            """处理将$_ts置空的情况"""
-            ts_convert = re.findall("\{_\$.{2}\['\$_ts'\]=\{\};", self.js_code)[0]
-            self.js_code = self.js_code.replace(ts_convert, '{return;')
-        except:
-            pass
-        get_ts = """;function get_newcode(){return window.new_code;};"""
-        self.js_code = ts_code + self.js_code + get_ts
-        try:
-            ctx = execjs.compile(self.js_code)
-            new_code = ctx.call("get_newcode")
-        except:
-            ctx = execjs.compile(self.js_code.encode('utf-8').decode('gbk', errors='ignore'))
-            new_code = ctx.call("get_newcode")
-        return new_code
+            content = re.findall('<meta content="(.*?)">', res_text)[0]
+            js_code = re.findall(r'(\(function\(\).*\(\))</script>', res_text)[0]
+            ts_res = self.session.get(self.ts_url, proxies=self.proxy)
+            return content, ts_res.text + js_code
+        return res_text, None
 
     def process_content(self):
-        content_fun_name = re.findall(r';_\$.{2}\(_\$.{2}\(\)\);', self.new_code)[0]
-        content_fun_name_ = content_fun_name.replace(content_fun_name.split('(')[1] + '()', '"' + self.content + '"')
-        self.new_code = self.new_code.replace(content_fun_name, content_fun_name_)
-        self.full_code = self.js_code.replace('window = global;document={};', self.ev) + self.new_code + """var get_cookie = function(){return document.cookie.split(';')[0].split('=')[1];};"""
-        ctx = execjs.compile(self.full_code)
-        self.cookie_80t = ctx.call('get_cookie')
+        full_code = rs_ev.replace("动态content", self.content) + self.js_code + """
+                function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};
+                """
+        with VM() as vm:
+            vm.run(full_code)
+            self.cookie_80t = vm.run('get_cookie()')
 
     def verify(self):
         if not self.js_code:
@@ -95,10 +70,10 @@ class Rshu5:
             'cookie': f'{self.cookie_name_1}={self.cookie_80s};{self.cookie_name_2}={self.cookie_80t}'
         })
         res = self.session.get(url=self.url, headers=self.session.headers, proxies=self.proxy)
-        res.encoding = res.apparent_encoding
+        res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
         if res.status_code == 200:
             logger.info(f'{self.url}：状态码{res.status_code}，Cookie可用')
-            return res.text, self.session.headers.get('cookie')
+            return res_text, self.session.headers.get('cookie')
         else:
             logger.debug(f'状态码{res.status_code},Cookie不可用')
 
@@ -110,8 +85,9 @@ class Rshu5:
         :return:
         """
         search_code = self.full_code.replace('search.jsp', search_url.split('?')[0]) + """var get_search = function(){return XMLHttpRequest.prototype.open("%s","%s")};""" % (method, search_url)
-        search_ctx = execjs.compile(search_code)
-        search_url_ = search_ctx.call('get_search').replace(':80', '')
+        with VM() as vm:
+            vm.run(search_code)
+            search_url_ = vm.run('get_search()').replace(':80', '')
         if method == 'POST':
             search_res = self.session.post(url=search_url_, headers=self.session.headers, data=post_data, proxies=self.proxy)
         else:
@@ -152,13 +128,12 @@ if __name__ == '__main__':
     """
     后缀环境修改：location & document.charset & document.characterSet & canvas下的pathname（针对接口不一致的情况）
     """
-    pass
-    # cookie_s = 'FSSBBIl1UgzbN7NS'
-    # cookie_t = 'FSSBBIl1UgzbN7NT'
-    # base_url = 'http://www.xiantao.gov.cn/zwgk/zfxxgk/zfwjk/gfwj/gz/201501/t20150114_1906035.shtml'
-    # ts_url = 'http://www.xiantao.gov.cn/4QbVtADbnLVIc/c.FxJzG50F.b795048.js'
-    # res = run(base_url, ts_url, cookie_s, cookie_t)
-    # print(res)
+    cookie_s = 'FSSBBIl1UgzbN7NO'
+    cookie_t = 'FSSBBIl1UgzbN7NP'
+    base_url = 'https://www.shhuangpu.gov.cn/zw/009002/009002002/listIndex2.html'
+    ts_url = 'https://www.shhuangpu.gov.cn/4QbVtADbnLVIc/c.FxJzG50F.d5db026.js'
+    res = run(base_url, ts_url, cookie_s, cookie_t)
+    print(res)
     # cookie_s = 'neCYtZEjo8GmS'
     # cookie_t = 'neCYtZEjo8GmT'
     # base_url = 'http://app1.nmpa.gov.cn/data_nmpa/face3/base.jsp?tableId=25&tableName=TABLE25&title=%B9%FA%B2%FA%D2%A9%C6%B7&bcId=152904713761213296322795806604'

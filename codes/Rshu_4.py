@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 # @Project : rs_server
 # @Time    : 2022/3/19 14:56
-# @Author  : Changchuan.Pei
+# @Author  : MuggleK
 # @File    : Rshu_4.py
 
 import math
-import execjs
+import cchardet
 import requests
 import re
 import random
 import time
 from traceback import format_exc
 from requests.packages import urllib3
+from node_vm2 import VM
 
 from loguru import logger
 from utils.tools import int_overflow, right_shift
@@ -77,11 +78,11 @@ class Rshu4:
 
     def get_content(self):
         res = self.session.get(self.url, verify=False, proxies=self.proxy, timeout=30)
-        res.encoding = res.apparent_encoding
+        res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
         if res.status_code == 202 or res.status_code == 412:
             self.cookie_80s = res.cookies.get_dict().get(self.cookie_name_1)
-            content = re.findall('<meta content="(.*?)">', res.text)[0]
-            js_code = re.findall(r'(\(function\(\).*\(\))</script>', res.text)[0]
+            content = re.findall('<meta content="(.*?)">', res_text)[0]
+            js_code = re.findall(r'(\(function\(\).*\(\))</script>', res_text)[0]
             self.temp_code = js_code
             return content, js_code
         return res.text, None
@@ -113,14 +114,10 @@ class Rshu4:
             };
         """
         self.js_code = ts_code + self.js_code + get_ts
-        try:
-            ctx = execjs.compile(self.js_code)
-            ts = ctx.call("get_ts")
-            new_code = ctx.call("get_newcode")
-        except:
-            ctx = execjs.compile(self.js_code.encode('utf-8').decode('gbk'))
-            ts = ctx.call("get_ts")
-            new_code = ctx.call("get_newcode")
+        with VM() as vm:
+            vm.run(self.js_code)
+            ts = vm.run('get_ts()')
+            new_code = vm.run('get_newcode()')
         return ts, new_code
 
     def get_tag(self):
@@ -276,8 +273,9 @@ class Rshu4:
                 temp_flag = list(set(re.findall(r"(_.{3})\(.*?\)", return_str)))
                 temp_func = [self.get_func(x, self.new_code) for x in temp_flag]
                 func_all = "function a()" + re.findall(r"\{.*", temp_list[i])[0] + '\n' + "\n".join(temp_func)
-                ctx = execjs.compile(func_all)
-                temp_list[i] = ctx.call("a")
+                with VM() as vm:
+                    vm.run(func_all)
+                    temp_list[i] = vm.run("a")
         # print('动态变化，4位的数组：', temp_list)
         return temp_list
 
@@ -663,8 +661,9 @@ class Rshu4:
         return _$k3;
     };})()'''% list_16_1_func
         html_func = html_func.replace(re.findall('_\$..\.Math\.abs',html_func)[0],'Math.abs')
-        ctx = execjs.compile(html_func)
-        list_16_1 = ctx.call("window.encrypt_", self.list_32_1)
+        with VM() as vm:
+            vm.run(html_func)
+            list_16_1 = vm.call("window.encrypt_", self.list_32_1)
         list_16_1 = [abs(x) for x in list_16_1]
         list_16_1 = self.fun_list_16_2_1([self.list_32_1, list_16_1])
         return list_16_1

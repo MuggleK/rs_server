@@ -1,12 +1,24 @@
 # rs_server
+![](https://img.shields.io/badge/python-3.7.3-brightgreen)
 
-瑞数4、5、6代 破解服务
+针对瑞数4，5，6，vmp版本，Python结合JS补环境逆向破解
 
-### 2022-03-19
-1. 整合不同版本瑞数的服务接口；
-2. 新增`log` 日志模块；
+---
 
-### 2022-03-22
-1. 新增flask接口，对应文件：`app.py`；
-2. 新增demo调用模块，对应文件：`demo.py`；
-3. 新增docker部署；
+使用Docker构建接口服务镜像
+
+```shell
+docker-compose build
+
+docker-compose up -d
+```
+
+使用Flask起接口
+
+```shell
+安装依赖
+pip install -r requirements.txt
+
+启动服务
+python3 app.py
+```

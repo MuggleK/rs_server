@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 # @Project : rs_server
 # @Time    : 2022/3/19 15:01
-# @Author  : Changchuan.Pei
+# @Author  : MuggleK
 # @File    : Rshu_6.py
 
-import execjs
+import cchardet
 import requests
 import re
 import time
 from traceback import format_exc
+
+from node_vm2 import VM
 from requests.packages import urllib3
 
 from loguru import logger
@@ -29,6 +31,7 @@ class Rshu6:
         self.session = requests.session()
         self.session.headers = {
             'Cache-Control': 'no-cache',
+            'Connection': 'close',
             'User-Agent': UserAgent()
         }
         self.proxy = proxy
@@ -44,20 +47,22 @@ class Rshu6:
 
     def get_content(self):
         res = self.session.get(self.url, verify=False, proxies=self.proxy)
-        res.encoding = res.apparent_encoding
+        res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
+
         if res.status_code == 202 or res.status_code == 412:
             self.cookie_80s = res.cookies.get_dict().get(self.cookie_name_1)
-            onload_value = re.findall(r'<input type="hidden" id="__onload__".*?value="(.*?)">', res.text, re.S)
+            onload_value = re.findall(r'<input type="hidden" id="__onload__".*?value="(.*?)">', res_text, re.S)
             self.ev = self.ev.replace("onload_value", onload_value[0]) if onload_value else self.ev
-            js_code = re.findall(r'(\(function\(\).*\(\))</script>', res.text)[0]
+            js_code = re.findall(r'(\(function\(\).*\(\))</script>', res_text)[0]
             return js_code
-        return {"html": res.text}
+        return {"html": res_text}
 
     def process_ts(self):
         ts_res = self.session.get(self.ts_url, proxies=self.proxy).text
-        self.full_code = self.ev + self.js_code + ';' + ts_res + """;var get_cookie = function(){return document.cookie.split(';')[0].split('=')[1];};"""
-        ctx = execjs.compile(self.full_code)
-        self.cookie_80t = ctx.call('get_cookie')
+        self.full_code = self.ev + self.js_code + ';' + ts_res + """;function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};"""
+        with VM() as vm:
+            vm.run(self.full_code)
+            self.cookie_80t = vm.run("get_cookie()")
 
     def verify(self):
         if isinstance(self.js_code, dict):
@@ -66,10 +71,10 @@ class Rshu6:
             'cookie': f'{self.cookie_name_1}={self.cookie_80s};{self.cookie_name_2}={self.cookie_80t}'
         })
         res = self.session.get(url=self.url, headers=self.session.headers, proxies=self.proxy)
-        res.encoding = res.apparent_encoding
+        res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
         if res.status_code == 200:
             logger.info(f'{self.url}：状态码{res.status_code}，Cookie可用')
-            return res.text, self.session.headers.get('cookie')
+            return res_text, self.session.headers.get('cookie')
         else:
             logger.debug(f'状态码{res.status_code},Cookie不可用')
 
@@ -80,8 +85,9 @@ class Rshu6:
         :return:
         """
         search_code = self.full_code.replace('search.jsp', search_url.split('?')[0]) + """var get_search = function(){return XMLHttpRequest.prototype.open("%s","%s")};""" % (method, search_url)
-        search_ctx = execjs.compile(search_code)
-        search_url_ = search_ctx.call('get_search').replace(':80', '')
+        with VM() as vm:
+            vm.run(search_code)
+            search_url_ = vm.run('get_search()').replace(':80', '')
         if method == 'POST':
             search_res = self.session.post(url=search_url_, headers=self.session.headers, data=post_data, proxies=self.proxy)
         else:

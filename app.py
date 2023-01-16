@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Project : rs_server
 # @Time    : 2022/3/19 14:56
-# @Author  : Changchuan.Pei
+# @Author  : MuggleK
 # @File    : app.py
 
 from flask import Flask, request
