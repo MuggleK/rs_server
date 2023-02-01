@@ -3,13 +3,13 @@
 # @Time    : 2022/3/19 14:56
 # @Author  : MuggleK
 # @File    : Rshu_5.py
-
-import cchardet
-import requests
 import re
 import time
 from traceback import format_exc
-from node_vm2 import VM
+
+import cchardet
+import requests
+from execjs import compile
 from requests.packages import urllib3
 
 from loguru import logger
@@ -59,9 +59,8 @@ class Rshu5:
         full_code = rs_ev.replace("动态content", self.content) + self.js_code + """
                 function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};
                 """
-        with VM() as vm:
-            vm.run(full_code)
-            self.cookie_80t = vm.run('get_cookie()')
+        full_ctx = compile(full_code)
+        self.cookie_80t = full_ctx.call('get_cookie')
 
     def verify(self):
         if not self.js_code:
@@ -77,7 +76,7 @@ class Rshu5:
         else:
             logger.debug(f'状态码{res.status_code},Cookie不可用')
 
-    def searchVerify(self, search_url, method='POST', post_data=None):
+    def search_verify(self, search_url, method='POST', post_data=None):
         """
         :param search_url:
         :param method:
@@ -85,9 +84,8 @@ class Rshu5:
         :return:
         """
         search_code = self.full_code.replace('search.jsp', search_url.split('?')[0]) + """var get_search = function(){return XMLHttpRequest.prototype.open("%s","%s")};""" % (method, search_url)
-        with VM() as vm:
-            vm.run(search_code)
-            search_url_ = vm.run('get_search()').replace(':80', '')
+        search_ctx = compile(search_code)
+        search_url_ = search_ctx.call('get_search').replace(':80', '')
         if method == 'POST':
             search_res = self.session.post(url=search_url_, headers=self.session.headers, data=post_data, proxies=self.proxy)
         else:
@@ -152,6 +150,6 @@ if __name__ == '__main__':
     #             'keyword': '%E7%94%9F%E7%89%A9',
     #             'State': 1
     #         }
-    #         search_res = temp_gx.searchVerify("search.jsp?", method='POST', post_data=post_data_)
+    #         search_res = temp_gx.search_verify("search.jsp?", method='POST', post_data=post_data_)
     #         print(search_res.text)
     #     break

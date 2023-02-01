@@ -8,4 +8,4 @@ services:
       - "/data/logs/rs_server:/usr/spider/logs"
       - "/home/ops/server/rs_server:/usr/spider"
     container_name: rs_server
-    entrypoint: ["/usr/local/bin/gunicorn", "-c", "gunicorn.py", "--pythonpath", "/usr/spider", "wsgi:app"]
+    entrypoint: ["python3", "app.py"]

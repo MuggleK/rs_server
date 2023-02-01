@@ -3,14 +3,21 @@
 # @Time    : 2022/3/19 14:56
 # @Author  : MuggleK
 # @File    : app.py
+import time
 
 from flask import Flask, request
+from gevent import monkey
+monkey.patch_all()
+
+from gevent.pywsgi import WSGIServer
+
 import logging
 import json
 from codes.Rshu_4 import run as run4
 from codes.Rshu_5 import run as run5
 from codes.Rshu_6 import run as run6
 from codes.Rshu_vmp import run as run_vmp
+
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -23,6 +30,7 @@ def index():
     get home page, you can define your own templates
     :return:
     """
+    time.sleep(5)
     return '<h2>Welcome to RS Decrypt System</h2>'
 
 
@@ -157,4 +165,5 @@ def rs_vmp_serer():
 
 
 if __name__ == '__main__':
-    app.run(port=5602, host="0.0.0.0", threaded=True, debug=False)
+    # app.run(port=5602, host="0.0.0.0", threaded=True, debug=False)
+    WSGIServer(("0.0.0.0", 5602), app).serve_forever()

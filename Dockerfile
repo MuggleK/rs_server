@@ -17,6 +17,3 @@ RUN pip install -r requirements.txt -i https://pypi.douban.com/simple/ &&\
 ENV PATH=$PATH:/opt/node-v14.15.4-linux-x64/bin
 
 ENV PYTHONPATH=/usr/spider
-
-# 设置gunicorn环境目录
-RUN sed -i "5 i sys.path[0] = '/usr/local/lib/python3.7/site-packages'" /usr/local/bin/gunicorn

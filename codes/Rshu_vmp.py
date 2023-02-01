@@ -4,16 +4,17 @@
 # @Author  : MuggleK
 # @File    : Rshu_vmp.py
 
-import cchardet
-import requests
 import re
 import time
 from urllib.parse import urljoin
 from traceback import format_exc
-from requests.packages import urllib3
-from node_vm2 import VM
 
+import cchardet
+import requests
+from requests.packages import urllib3
+from execjs import compile
 from loguru import logger
+
 from utils.proxy import get_proxies
 from utils.user_agent import UserAgent
 
@@ -60,9 +61,8 @@ class RshuVmp:
         full_code = rs_ev.replace("动态content", self.content) + self.js_code + """
         function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};
         """
-        with VM() as vm:
-            vm.run(full_code)
-            self.cookie_80t = vm.run('get_cookie()')
+        full_ctx = compile(full_code)
+        self.cookie_80t = full_ctx.call('get_cookie')
 
     def verify(self):
         if not self.js_code:

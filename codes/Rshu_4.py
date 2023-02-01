@@ -4,17 +4,19 @@
 # @Author  : MuggleK
 # @File    : Rshu_4.py
 
+import re
+import time
 import math
+import random
+from traceback import format_exc
+
 import cchardet
 import requests
-import re
-import random
-import time
-from traceback import format_exc
 from requests.packages import urllib3
-from node_vm2 import VM
 
 from loguru import logger
+from execjs import compile
+
 from utils.tools import int_overflow, right_shift
 from utils.proxy import get_proxies
 from utils.user_agent import UserAgent
@@ -114,10 +116,9 @@ class Rshu4:
             };
         """
         self.js_code = ts_code + self.js_code + get_ts
-        with VM() as vm:
-            vm.run(self.js_code)
-            ts = vm.run('get_ts()')
-            new_code = vm.run('get_newcode()')
+        ctx = compile(self.js_code)
+        ts = ctx.call('get_ts')
+        new_code = ctx.call('get_newcode')
         return ts, new_code
 
     def get_tag(self):
@@ -273,9 +274,8 @@ class Rshu4:
                 temp_flag = list(set(re.findall(r"(_.{3})\(.*?\)", return_str)))
                 temp_func = [self.get_func(x, self.new_code) for x in temp_flag]
                 func_all = "function a()" + re.findall(r"\{.*", temp_list[i])[0] + '\n' + "\n".join(temp_func)
-                with VM() as vm:
-                    vm.run(func_all)
-                    temp_list[i] = vm.run("a")
+                func_ctx = compile(func_all)
+                temp_list[i] = func_ctx.call("a")
         # print('动态变化，4位的数组：', temp_list)
         return temp_list
 
@@ -659,11 +659,10 @@ class Rshu4:
             _$k3[_$sP++] = _$G3 > 256 ? 256 : _$G3;
         }
         return _$k3;
-    };})()'''% list_16_1_func
-        html_func = html_func.replace(re.findall('_\$..\.Math\.abs',html_func)[0],'Math.abs')
-        with VM() as vm:
-            vm.run(html_func)
-            list_16_1 = vm.call("window.encrypt_", self.list_32_1)
+    };})()''' % list_16_1_func
+        html_func = html_func.replace(re.findall(r'_\$..\.Math\.abs', html_func)[0], 'Math.abs')
+        html_ctx = compile(html_func)
+        list_16_1 = html_ctx.call("window.encrypt_", self.list_32_1)
         list_16_1 = [abs(x) for x in list_16_1]
         list_16_1 = self.fun_list_16_2_1([self.list_32_1, list_16_1])
         return list_16_1

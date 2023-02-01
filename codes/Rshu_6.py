@@ -4,16 +4,16 @@
 # @Author  : MuggleK
 # @File    : Rshu_6.py
 
-import cchardet
-import requests
 import re
 import time
 from traceback import format_exc
 
-from node_vm2 import NodeVM, VM
+import cchardet
+import requests
 from requests.packages import urllib3
-
+from execjs import compile
 from loguru import logger
+
 from utils.proxy import get_proxies
 from utils.user_agent import UserAgent
 
@@ -60,8 +60,8 @@ class Rshu6:
     def process_ts(self):
         ts_res = self.session.get(self.ts_url, proxies=self.proxy).text
         self.full_code = self.ev + self.js_code + ';' + ts_res + """;function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};module.exports = {get_cookie}"""
-        with NodeVM.code(self.full_code) as module:
-            self.cookie_80t = module.call_member("get_cookie")
+        full_ctx = compile(self.full_code)
+        self.cookie_80t = full_ctx.call("get_cookie")
 
     def verify(self):
         if isinstance(self.js_code, dict):
@@ -84,9 +84,8 @@ class Rshu6:
         :return:
         """
         search_code = self.full_code.replace('search.jsp', search_url.split('?')[0]) + """var get_search = function(){return XMLHttpRequest.prototype.open("%s","%s")};""" % (method, search_url)
-        with VM() as vm:
-            vm.run(search_code)
-            search_url_ = vm.run('get_search()').replace(':80', '')
+        search_ctx = compile(search_code)
+        search_url_ = search_ctx.call('get_search').replace(':80', '')
         if method == 'POST':
             search_res = self.session.post(url=search_url_, headers=self.session.headers, data=post_data, proxies=self.proxy)
         else:
