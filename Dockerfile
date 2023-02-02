@@ -9,7 +9,7 @@ RUN mkdir -p /data/logs
 
 
 WORKDIR /usr/spider
-COPY ./requirements.txt /usr/spider
+COPY . /usr/spider
 RUN pip install -U pip -i https://pypi.douban.com/simple/
 RUN pip install -r requirements.txt -i https://pypi.douban.com/simple/ &&\
     wget https://nodejs.org/dist/v14.15.4/node-v14.15.4-linux-x64.tar.xz &&\
