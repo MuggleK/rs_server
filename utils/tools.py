@@ -24,7 +24,3 @@ def right_shift(n, i):
         return int_overflow(n >> i)
     else:
         return n
-
-
-if __name__ == '__main__':
-    pass

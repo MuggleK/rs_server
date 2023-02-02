@@ -3,16 +3,17 @@
 # @Time    : 2022/3/19 14:56
 # @Author  : MuggleK
 # @File    : app.py
-import time
 
-from flask import Flask, request
 from gevent import monkey
 monkey.patch_all()
 
+
+import time
+import json
+import logging
+from flask import Flask, request
 from gevent.pywsgi import WSGIServer
 
-import logging
-import json
 from codes.Rshu_4 import run as run4
 from codes.Rshu_5 import run as run5
 from codes.Rshu_6 import run as run6
