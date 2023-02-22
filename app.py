@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 # @Project : rs_server
-# @Time    : 2022/3/19 14:56
+# @Time    : 2023/2/21 17:50
 # @Author  : MuggleK
-# @File    : app.py
-
-from gevent import monkey
-monkey.patch_all()
-
+# @File    : server.py
 
 import time
 import json
-import logging
+
+from gevent import monkey
+monkey.patch_all(thread=False)
+
 from flask import Flask, request
 from gevent.pywsgi import WSGIServer
 
@@ -19,10 +18,7 @@ from codes.Rshu_5 import run as run5
 from codes.Rshu_6 import run as run6
 from codes.Rshu_vmp import run as run_vmp
 
-
 app = Flask(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-LOGGER = logging.getLogger(__name__)
 
 
 @app.route('/')
