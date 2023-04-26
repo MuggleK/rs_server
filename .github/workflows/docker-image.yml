@@ -7,7 +7,7 @@ on:
 
 env:
   DOCKERHUB_USERNAME: mugglek
-  DOCKERHUB_REPOSITORY: rs_server
+  DOCKERHUB_REPOSITORY: mugglek/rs_server
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
 jobs:
