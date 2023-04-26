@@ -6,6 +6,5 @@ services:
     network_mode: "host"
     volumes:
       - "/data/logs/rs_server:/usr/spider/logs"
-      - "/root/jenkins/workspace/rs_server:/usr/spider"
     container_name: rs_server
     entrypoint: ["/usr/local/bin/gunicorn", "-c", "gunicorn.py", "--pythonpath", "/usr/spider", "wsgi:app"]
