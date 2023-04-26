@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build and push Docker image
-      run: docker build . --file Dockerfile --tag mugglek/rs_server:process
+      uses: docker/build-push-action@v2
       with:
         context: .
         push: true
