@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - master
+      - vm2
 
 jobs:
   build-and-push:
@@ -14,4 +14,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: mugglek/rs_server:process
+          tags: mugglek/rs_server:latest
