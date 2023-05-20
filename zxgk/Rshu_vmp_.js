@@ -1945,10 +1945,10 @@
                 navigator.__proto__["cookieEnabled"] = true;
                 navigator.__proto__["appCodeName"] = "Mozilla";
                 navigator.__proto__["appName"] = "Netscape";
-                navigator.__proto__["appVersion"] = "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
+                navigator.__proto__["appVersion"] = "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36";
                 navigator.__proto__["platform"] = "Win32";
                 navigator.__proto__["product"] = "Gecko";
-                navigator.__proto__["userAgent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
+                navigator.__proto__["userAgent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36";
                 navigator.__proto__["language"] = "zh-CN";
                 navigator.__proto__["languages"] = ['zh-CN'];
                 navigator.__proto__["onLine"] = true;

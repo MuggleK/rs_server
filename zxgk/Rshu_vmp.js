@@ -1945,10 +1945,10 @@
                 navigator.__proto__["cookieEnabled"] = true;
                 navigator.__proto__["appCodeName"] = "Mozilla";
                 navigator.__proto__["appName"] = "Netscape";
-                navigator.__proto__["appVersion"] = "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
+                navigator.__proto__["appVersion"] = "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36";
                 navigator.__proto__["platform"] = "Win32";
                 navigator.__proto__["product"] = "Gecko";
-                navigator.__proto__["userAgent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
+                navigator.__proto__["userAgent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36";
                 navigator.__proto__["language"] = "zh-CN";
                 navigator.__proto__["languages"] = ['zh-CN'];
                 navigator.__proto__["onLine"] = true;
@@ -6770,7 +6770,7 @@
                     pathname: location.pathname,
                     search: location.search,
                     hash: location.hash,
-                    appendChild: function (x) {debugger; return {}},
+                    appendChild: function (x) {debugger; return x},
                 }
                 var documentConstructor = function Document() {
                 }
@@ -12157,6 +12157,9 @@ if ($_ts.cd) {
     }
 
     function _$iM() {
+        debugger;
+        // 这里生成67
+        return 1;
         _$bX = _$cx(_$jj[9]);
         _$jI = _$b8[37] + _$cF[14];
         return +(_$bX + _$jI);
