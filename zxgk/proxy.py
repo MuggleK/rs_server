@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# @Project : rs_server
+# @Project : CrawlersTools
 # @Time    : 2022/6/21 17:06
 # @Author  : MuggleK
 # @File    : proxy.py
 
 import httpx
 
-from loguru import logger
+from utils import logger
 
 
 def get_proxies(http2=False):
