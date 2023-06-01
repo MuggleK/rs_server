@@ -1925,6 +1925,7 @@ const addon = require(process.cwd() + '/vmp_235/addon16.node');
             safefunction(performance.__proto__["measureUserAgentSpecificMemory"])
             performance.__proto__["now"] = function now() {
                 debugger ;
+                return Date['now']().toString().slice(8);
             }
             ;
             safefunction(performance.__proto__["now"])

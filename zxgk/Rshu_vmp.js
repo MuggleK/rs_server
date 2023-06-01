@@ -1213,7 +1213,7 @@
         function info(tag, objectname, propertyname, value) {
             var islog = config.getConfigById("log");
             if (typeof (islog) == "boolean" && islog) {
-            //    console.table([{ tag, objectname, propertyname, value }], ["tag", "objectname", "propertyname", "value"]);
+               console.table([{ tag, objectname, propertyname, value }], ["tag", "objectname", "propertyname", "value"]);
             //    debugger;
             }
         }
@@ -1924,6 +1924,7 @@
             safefunction(performance.__proto__["measureUserAgentSpecificMemory"])
             performance.__proto__["now"] = function now() {
                 debugger ;
+                return Date['now']();
             }
             ;
             safefunction(performance.__proto__["now"])
@@ -10318,16 +10319,17 @@ module.exports = {
 )();
 
 
-// ts = 1684489617004
-// date_ = new Date(ts)
-// handler = {
-// "constructor":function (target, args){return date_;}
-// }
-// Date = new Proxy(Date, handler)
+Date.now = function now() { return 1661986251253 };
+Date.parse = function () { return 1661986251253 };
+Date.prototype.value0f = function () { return 1661986251253 };
+Date.prototype.getTime = function () { return 1661986251253 };
+Date.prototype.toString = function () { return 1661986251253 };
+Performance.prototype.now = function now(){ return Number('1661986251253'.slice(8))}
+Math.random = function random() { return 0.08636862211354912 };
+window.crypto.getRandomValues = function getRandomValues(array32, ...args){
+return array32;
+}
 
-// Math.random = function(){
-//     return 0.22109214169487568;
-// };
 
 
 $_ts = window['$_ts'];
@@ -22750,7 +22752,7 @@ if ($_ts.cd) {
 
                                                 _$eX();
 
-                                                console.log(_$a1)
+                                                // console.log(_$a1)
                                                 if (_$a1 == "captureStackTrace"){
                                                     debugger
                                                 }
@@ -31731,3 +31733,9 @@ if ($_ts.cd) {
 
 console.log(document.cookie.split("lqWVdQzgOVyaT=")[1].split(";")[0])
 console.log(document.cookie.split("lqWVdQzgOVyaT=")[1].split(";")[0].length)
+
+var get_search = function () {
+    return XMLHttpRequest.prototype.open("POST", "searchXgl.do")
+};
+
+console.log(get_search())

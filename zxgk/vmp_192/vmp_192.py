@@ -142,5 +142,28 @@ if __name__ == '__main__':
         rs_vmp = RshuVmp(base_url, cookie_s, cookie_t, proxy)
         rs_vmp_text, cookies = rs_vmp.verify()
 
+        img_url = 'http://zxgk.court.gov.cn/xgl/captchaXgl.do?captchaId=KUotM7iZMtrYceH003Z8U86h1GrVtapu&random=0.21500194251143379'
+        img_res = rs_vmp.session.get(img_url, proxies=proxy)
+        res = ocr.classification(img_res.content)
+        print(res)
 
-    get_sx()
+        img_verify_url = f"http://zxgk.court.gov.cn/xgl/checkyzm.do?captchaId=KUotM7iZMtrYceH003Z8U86h1GrVtapu&pCode={res}"
+        img_verify_res = rs_vmp.session.get(img_verify_url, proxies=proxy)
+        print(img_verify_res.text)
+
+        search_list_url = 'http://zxgk.court.gov.cn/xgl/searchXgl.do'
+        search_list_data = {
+            "pName": "张三",
+            "pCardNum": "",
+            "selectCourtId": "0",
+            "pCode": res,
+            "captchaId": "KUotM7iZMtrYceH003Z8U86h1GrVtapu",
+            "searchCourtName": "全国法院（包含地方各级法院）",
+            "selectCourtArrange": "1",
+            "currentPage": "1"
+        }
+        search_list_res = rs_vmp.session.post(search_list_url, data=search_list_data, proxies=proxy)
+        print(search_list_res.status_code)
+        print(search_list_res.json())
+
+    get_zb()
