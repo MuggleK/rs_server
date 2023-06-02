@@ -2,7 +2,7 @@
 # @Project : rs_server
 # @Time    : 2022/6/13 17:06
 # @Author  : MuggleK
-# @File    : vmp_235_full.py
+# @File    : vmp_235_run.py
 import random
 import re
 import time
@@ -115,69 +115,3 @@ def get_ck(base_url, cookie_s, cookie_t):
         except:
             logger.error(f'当前url：{base_url}, {format_exc(limit=3)}')
             time.sleep(0.5)
-
-
-if __name__ == '__main__':
-    import ddddocr
-    ocr = ddddocr.DdddOcr(beta=True)
-
-
-    def get_sx():
-
-        cookie_s = 'lqWVdQzgOVyaS'
-        cookie_t = 'lqWVdQzgOVyaT'
-        base_url = 'http://zxgk.court.gov.cn/shixin/'
-        proxy = get_proxies(http2=True)
-        rs_vmp = RshuVmp(base_url, cookie_s, cookie_t, proxy)
-        rs_vmp_text, cookies = rs_vmp.verify()
-
-        img_url = 'http://zxgk.court.gov.cn/shixin/captchaNew.do?captchaId=KUotM7iZMtrYceH003Z8U86h1GrVtapu&random=0.21500194251143379'
-        img_res = rs_vmp.session.get(img_url)
-        res = ocr.classification(img_res.content)
-        print(res)
-
-        img_verify_url = f"http://zxgk.court.gov.cn/shixin/checkyzm.do?captchaId=KUotM7iZMtrYceH003Z8U86h1GrVtapu&pCode={res}"
-        img_verify_res = rs_vmp.session.get(img_verify_url)
-        print(img_verify_res.text)
-
-        search_list_url = 'http://zxgk.court.gov.cn/shixin/searchSX.do'
-        search_list_data = {
-            "pName": "张三",
-            "pCardNum": "",
-            "pProvince": "0",
-            "pCode": res,
-            "captchaId": "KUotM7iZMtrYceH003Z8U86h1GrVtapu",
-            "currentPage": "1"
-        }
-        search_list_res = rs_vmp.session.post(search_list_url, data=search_list_data)
-        print(search_list_res.status_code)
-        print(search_list_res.json())
-
-        for item in search_list_res.json()[0].get('result'):
-            ids = item.get('id')
-            caseCode = item.get('caseCode')
-
-            search_detail_url = f'http://zxgk.court.gov.cn/shixin/disDetailNew?id=707271156&caseCode=%EF%BC%882019%EF%BC%89%E5%86%800423%E6%89%A7421%E5%8F%B7&pCode={res}&captchaId=KUotM7iZMtrYceH003Z8U86h1GrVtapu'
-            search_code = rs_vmp.full_code.replace('7cka', res) + """var get_search = function(){return XMLHttpRequest.prototype.open("%s","%s")};""" % ('get', search_detail_url)
-            search_ctx = compile(search_code)
-            search_url_ = search_ctx.call('get_search').replace(':80', '')
-            print(search_url_)
-            search_res = rs_vmp.session.get(url=search_url_,)
-            print(search_res.status_code)
-            print(search_res.text)
-            break
-
-
-    def get_zb():
-
-        cookie_s = 'lqWVdQzgOVyaS'
-        cookie_t = 'lqWVdQzgOVyaT'
-        base_url = 'http://zxgk.court.gov.cn/zhongben/'
-        proxy = get_proxies(http2=True)
-        rs_vmp = RshuVmp(base_url, cookie_s, cookie_t, proxy)
-        rs_vmp_text, cookies = rs_vmp.verify()
-        print(rs_vmp_text)
-        print(cookies)
-
-
-    get_sx()

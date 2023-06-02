@@ -341,7 +341,6 @@ class Zxgk(object):
 
         search_list_url = 'http://zxgk.court.gov.cn/xgl/searchXgl.do'
         req_url = rs_vmp.search_url("/xgl/searchXgl.do", search_list_url, 'post')
-        print(req_url)
         search_list_data = {
             "pName": keyword,
             "pCardNum": "",
@@ -352,7 +351,7 @@ class Zxgk(object):
             "selectCourtArrange": "1",
             "currentPage": "1"
         }
-        search_list_res = session.post(req_url, data=search_list_data)
+        search_list_res = session.post(search_list_url, data=search_list_data)
         if search_list_res.status_code != 200:
             print(search_list_res.status_code)
             logger.error("List Query failed, task push into queue")
@@ -366,6 +365,6 @@ class Zxgk(object):
 if __name__ == '__main__':
     for _ in range(10):
         zxgk = Zxgk()
-        zxgk.xg_search('李明')
+        zxgk.sx_search('李明')
         # zxgk.sf_search('房产')
-        break
+        # break
