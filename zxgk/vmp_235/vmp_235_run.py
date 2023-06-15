@@ -7,7 +7,6 @@ import random
 import re
 import time
 from traceback import format_exc
-from urllib.parse import urljoin
 
 import cchardet
 import httpx
@@ -22,6 +21,9 @@ urllib3.disable_warnings()
 
 with open(f'{ROOT_DIR}/zxgk/vmp_235/zxgk_235.js', 'r', encoding='utf-8')as f:
     rs_ev = f.read()
+
+with open(f'{ROOT_DIR}/zxgk/vmp_235/93W4UXnYb8SB.bbf9512.js', 'r', encoding='utf-8')as f:
+    call_code = f.read()
 
 
 def random_version():
@@ -50,7 +52,7 @@ class RshuVmp:
         self.cookie_name_1 = cookie_s
         self.cookie_name_2 = cookie_t
         self.session = requests.session()
-        self.session = httpx.Client(proxies=proxy, verify=False, headers=self.headers, timeout=30)
+        self.session = httpx.Client(proxies=proxy, verify=False, headers=self.headers, timeout=10)
         self.proxy = proxy
         self.url = url
         self.cookie_80s = None
@@ -67,9 +69,7 @@ class RshuVmp:
         if res.status_code == 202 or res.status_code == 412:
             self.cookie_80s = self.session.cookies.get(self.cookie_name_1)
             content = re.findall('<meta content="(.*?)">', res_text)[0].split('"')[0]
-            js_url = urljoin(self.url, re.findall(r"""<script type="text/javascript" charset="utf-8" src="(.*?)" r='m'>""", res_text)[0])
-            ts_code = re.findall(r"<script .*?>(.*?)</script>", res_text)[1]
-            js_code = ts_code + self.session.get(js_url).text
+            js_code = re.findall(r"<script .*?>(.*?)</script>", res_text)[1] + call_code
             return content, js_code
 
         return res.text, None
