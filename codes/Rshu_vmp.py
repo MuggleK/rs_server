@@ -6,11 +6,13 @@
 
 import re
 import time
+from pprint import pprint
 from urllib.parse import urljoin
 from traceback import format_exc
 
 import cchardet
 import requests
+from node_vm2 import VM
 from requests.packages import urllib3
 from execjs import compile
 from loguru import logger
@@ -20,7 +22,7 @@ from utils.user_agent import UserAgent
 
 urllib3.disable_warnings()
 
-with open('./resources/Rshu_vmp.js', 'r', encoding='utf-8')as f:
+with open('../resources/Rshu_vmp.js', 'r', encoding='utf-8')as f:
     rs_ev = f.read()
 
 
@@ -61,15 +63,19 @@ class RshuVmp:
         full_code = rs_ev.replace("动态content", self.content) + self.js_code + """
         function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};
         """
-        full_ctx = compile(full_code)
-        self.cookie_80t = full_ctx.call('get_cookie')
+        with VM() as vm:
+            vm.run(full_code)
+            cookie = vm.run('get_cookie()')
+            self.cookie_80t = cookie
 
     def verify(self):
         if not self.js_code:
             return self.content, None
         self.session.headers.update({
-            'cookie': f'{self.cookie_name_1}={self.cookie_80s};{self.cookie_name_2}={self.cookie_80t}'
+            'Cookie': f'{self.cookie_name_1}={self.cookie_80s}; {self.cookie_name_2}={self.cookie_80t}'
         })
+        self.session.headers["Referer"] = self.url
+        pprint(self.session.headers)
         res = self.session.get(url=self.url, headers=self.session.headers, proxies=self.proxy)
         res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
 
@@ -104,3 +110,10 @@ def run(base_url, cookie_s, cookie_t, proxy=None):
         'code': 500,
         'data': {'html': None}
     }
+
+
+if __name__ == '__main__':
+    cookie_s = 'azSsQE5NvspcS'
+    cookie_t = 'azSsQE5NvspcT'
+    base_url = 'http://cdagri.chengdu.gov.cn/nyxx/c109535/zwgk_list.shtml'
+    run(base_url, cookie_s, cookie_t)
