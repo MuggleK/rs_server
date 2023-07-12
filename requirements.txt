@@ -5,3 +5,4 @@ itsdangerous==2.0.1
 gevent
 cchardet
 pyexecjs
+node_vm2

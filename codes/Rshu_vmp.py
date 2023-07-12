@@ -7,15 +7,14 @@
 import re
 import time
 from pprint import pprint
-from urllib.parse import urljoin
 from traceback import format_exc
+from urllib.parse import urljoin
 
 import cchardet
 import requests
+from loguru import logger
 from node_vm2 import VM
 from requests.packages import urllib3
-from execjs import compile
-from loguru import logger
 
 from utils.proxy import get_proxies
 from utils.user_agent import UserAgent
