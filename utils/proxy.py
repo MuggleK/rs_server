@@ -8,5 +8,5 @@ import requests
 
 
 def get_proxies():
-    proxy = requests.get(" http://192.168.9.3:5555/random").text.strip()
+    proxy = requests.get("http://192.168.4.155:5555/random").text.strip()
     return {'http': 'http://' + proxy, 'https': 'http://' + proxy}

@@ -20,7 +20,7 @@ from utils.user_agent import UserAgent
 
 urllib3.disable_warnings()
 
-with open('./resources/Rshu_vmp.js', 'r', encoding='utf-8')as f:
+with open('../resources/Rshu_vmp.js', 'r', encoding='utf-8')as f:
     rs_ev = f.read()
 
 
@@ -110,7 +110,7 @@ def run(base_url, cookie_s, cookie_t, proxy=None):
 
 
 if __name__ == '__main__':
-    cookie_s = 'g0DMc7f8wv2yO'
-    cookie_t = 'g0DMc7f8wv2yP'
-    base_url = 'https://yunnan.chinatax.gov.cn/col/col3908/index.html'
+    cookie_s = 'azSsQE5NvspcS'
+    cookie_t = 'azSsQE5NvspcT'
+    base_url = 'http://www.xinjin.gov.cn/xjxrmzf/c125830/zt_List.shtml'
     print(run(base_url, cookie_s, cookie_t))

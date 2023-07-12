@@ -40,15 +40,15 @@ def test_5():
 
 
 def test_vmp():
-    cookie_s = 'VIP9lLgDcAL2S'
-    cookie_t = 'VIP9lLgDcAL2T'
-    base_url = 'http://beijing.chinatax.gov.cn/bjswj/c105358/hot.shtml'
+    cookie_s = 'azSsQE5NvspcS'
+    cookie_t = 'azSsQE5NvspcT'
+    base_url = 'http://www.xinjin.gov.cn/xjxrmzf/c125830/zt_List.shtml'
     data = {
         "url": base_url,
         "s": cookie_s,
         "t": cookie_t,
     }
-    res = requests.post('http://127.0.0.1:5000/rs/vmp', data=data)
+    res = requests.post('http://192.168.9.3:5602/rs/vmp', data=data)
     print(res.json())
     return res.json()
 
