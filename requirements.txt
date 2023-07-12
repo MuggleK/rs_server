@@ -6,3 +6,5 @@ gevent
 cchardet
 pyexecjs
 node_vm2
+httpx
+httpx[http2]
