@@ -63,7 +63,7 @@ def test_vmp():
         "s": cookie_s,
         "t": cookie_t,
     }
-    res = requests.post('http://175.178.127.140:5602/rs/vmp', data=data)
+    res = requests.post('http://127.0.0.1:5000/rs/vmp', data=data)
     print(res.json())
     return res.json()
 
@@ -71,8 +71,8 @@ def test_vmp():
 if __name__ == '__main__':
     # test_4()
     # test_5()
-    test_6()
-    # vmp_res = test_vmp()
+    # test_6()
+    vmp_res = test_vmp()
     # hg_url = 'http://credit.customs.gov.cn/ccppserver/ccpp/queryList'
     # hg_json = {"manaType": "0", "apanage": "", "depCodeChg": "", "curPage": "2", "pageSize": 20}
     # headers = {

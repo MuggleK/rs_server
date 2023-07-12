@@ -21,7 +21,7 @@ from utils.user_agent import UserAgent
 
 urllib3.disable_warnings()
 
-with open('../resources/Rshu_vmp.js', 'r', encoding='utf-8')as f:
+with open('./resources/Rshu_vmp.js', 'r', encoding='utf-8')as f:
     rs_ev = f.read()
 
 
@@ -74,13 +74,12 @@ class RshuVmp:
             'Cookie': f'{self.cookie_name_1}={self.cookie_80s}; {self.cookie_name_2}={self.cookie_80t}'
         })
         self.session.headers["Referer"] = self.url
-        pprint(self.session.headers)
         res = self.session.get(url=self.url, headers=self.session.headers, proxies=self.proxy)
         res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
 
         if res.status_code == 200:
             logger.info(f'{self.url}：状态码{res.status_code}，Cookie可用')
-            return res_text, self.session.headers.get('cookie')
+            return res_text, self.session.headers.get('Cookie')
         else:
             logger.debug(f'状态码{res.status_code},Cookie不可用')
 
