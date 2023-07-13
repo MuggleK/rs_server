@@ -69,6 +69,7 @@ class RshuVmp:
             vm.run(full_code)
             cookie = vm.run('get_cookie()')
             self.cookie_80t = cookie
+            logger.debug("cookie_80s: {}, cookie_80t: {}".format(self.cookie_80s, self.cookie_80t))
 
     def verify(self):
         if not self.js_code:
@@ -77,7 +78,8 @@ class RshuVmp:
             'Cookie': f'{self.cookie_name_1}={self.cookie_80s}; {self.cookie_name_2}={self.cookie_80t}'
         })
         self.session.headers["Referer"] = self.url
-        res = self.session.get(url=self.url, headers=self.session.headers, proxies=self.proxy)
+        logger.debug("正在验证cookie：{}".format(self.url))
+        res = self.session.get(url=self.url, headers=self.session.headers, proxies=self.proxy, timeout=30)
         res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
 
         if res.status_code == 200:
