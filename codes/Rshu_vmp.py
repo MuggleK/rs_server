@@ -22,7 +22,7 @@ from utils.user_agent import UserAgent
 
 urllib3.disable_warnings()
 
-subprocess.Popen = partial(subprocess.Popen, encoding='utf-8')
+# subprocess.Popen = partial(subprocess.Popen, encoding='utf-8')
 
 with open('./resources/Rshu_vmp.js', 'r', encoding='utf-8')as f:
     rs_ev = f.read()
@@ -50,7 +50,7 @@ class RshuVmp:
     def get_content(self):
         res = self.session.get(self.url, verify=False, proxies=self.proxy, headers=self.session.headers, timeout=30)
         res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
-
+        logger.debug("url: {} 首页状态码：{}".format(self.url, res.status_code))
         if res.status_code == 202 or res.status_code == 412:
             self.cookie_80s = res.cookies.get_dict().get(self.cookie_name_1)
             content = re.findall('<meta content="(.*?)">', res_text)[0].split('"')[0]
@@ -91,6 +91,7 @@ def run(base_url, cookie_s, cookie_t, proxy=None):
     start_time = time.time()
     for _ in range(3):
         try:
+            logger.debug("开始获取ck：{}".format(base_url))
             rs_vmp = RshuVmp(base_url, cookie_s, cookie_t, proxy)
             rs_vmp_text, cookies = rs_vmp.verify()
             if rs_vmp_text:
