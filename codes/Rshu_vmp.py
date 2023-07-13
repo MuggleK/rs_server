@@ -5,16 +5,14 @@
 # @File    : Rshu_vmp.py
 
 import re
-import subprocess
 import time
-from functools import partial
 from traceback import format_exc
 from urllib.parse import urljoin
 
 import cchardet
+import execjs
 import requests
 from loguru import logger
-from node_vm2 import VM
 from requests.packages import urllib3
 
 from utils.proxy import get_proxies
@@ -22,7 +20,6 @@ from utils.user_agent import UserAgent
 
 urllib3.disable_warnings()
 
-# subprocess.Popen = partial(subprocess.Popen, encoding='utf-8')
 
 with open('./resources/Rshu_vmp.js', 'r', encoding='utf-8')as f:
     rs_ev = f.read()
@@ -50,14 +47,12 @@ class RshuVmp:
     def get_content(self):
         res = self.session.get(self.url, verify=False, proxies=self.proxy, headers=self.session.headers, timeout=30)
         res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
-        logger.debug("url: {} 首页状态码：{}".format(self.url, res.status_code))
         if res.status_code == 202 or res.status_code == 412:
             self.cookie_80s = res.cookies.get_dict().get(self.cookie_name_1)
             content = re.findall('<meta content="(.*?)">', res_text)[0].split('"')[0]
             js_url = urljoin(self.url, re.findall(r"""<script type="text/javascript" charset="utf-8" src="(.*?)" r='m'>""", res_text)[0])
             ts_code = re.findall(r"<script .*?>(.*?)</script>", res_text)[1]
             js_code = ts_code + self.session.get(js_url, verify=False, proxies=self.proxy, headers=self.session.headers, timeout=30).text
-            logger.debug("获取ts成功")
             return content, js_code
 
         return res.text, None
@@ -66,12 +61,8 @@ class RshuVmp:
         full_code = rs_ev.replace("动态content", self.content) + self.js_code + """
         function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};
         """
-        logger.debug("正在计算cookie")
-        with VM() as vm:
-            vm.run(full_code)
-            cookie = vm.run('get_cookie()')
-            self.cookie_80t = cookie
-            logger.debug("cookie_80s: {}, cookie_80t: {}".format(self.cookie_80s, self.cookie_80t))
+        ctx = execjs.compile(full_code)
+        self.cookie_80t = ctx.call('get_cookie')
 
     def verify(self):
         if not self.js_code:
@@ -80,7 +71,6 @@ class RshuVmp:
             'Cookie': f'{self.cookie_name_1}={self.cookie_80s}; {self.cookie_name_2}={self.cookie_80t}'
         })
         self.session.headers["Referer"] = self.url
-        logger.debug("正在验证cookie：{}".format(self.url))
         res = self.session.get(url=self.url, headers=self.session.headers, proxies=self.proxy, timeout=30)
         res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
 

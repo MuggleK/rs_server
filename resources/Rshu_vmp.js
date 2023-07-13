@@ -1,6 +1,9 @@
 
 
 
+
+
+
 trashvm = {}
 trashvm.proxy = function(obj){
 
@@ -21,7 +24,7 @@ trashvm.proxy = function(obj){
         }
     });
 };
-
+debugger;
 (() => {
     "use strict";
     const $toString = Function.toString;
@@ -40,7 +43,10 @@ trashvm.proxy = function(obj){
     delete Function.prototype['toString']; //删除原型链上的toString
     set_native(Function.prototype, "toString", myToString); //自己定义个getter方法
     set_native(Function.prototype.toString, myFunction_toString_symbol, "function toString() { [native code] }"); //套个娃 保护一下我们定义的toString 否则就暴露了
-    this.trashvm.func_set_natvie = (func) => {
+    trashvm.func_set_natvie = (func) => {
+        if(typeof func == "undefined"){
+            return
+        }
         set_native(func, myFunction_toString_symbol, `function ${myFunction_toString_symbol,func.name || ''}() { [native code] }`);
     }; //导出函数到globalThis
 }).call(this);
@@ -127,7 +133,7 @@ WindowProperties.prototype.__proto__ = EventTarget.prototype;
  *
  * window
  */
- window = this;
+ window = global;
 
 
  //这个是创建一个Window的构造函数
@@ -1897,7 +1903,7 @@ Object.defineProperty(Navigator.prototype,'webdriver',{
         return false;
     }
 });
-trashvm.func_set_natvie(Object.getOwnPropertyDescriptor(Navigator.prototype,'webdriver').get)
+trashvm.func_set_natvie(Object.getOwnPropertyDescriptor(Navigator.prototype,'webdriver').get);
 
 navigator = {
 
@@ -2225,7 +2231,6 @@ window = trashvm.proxy(window);
 navigator = trashvm.proxy(navigator);
 location = trashvm.proxy(location);
 document = trashvm.proxy(document);
-window.clientInformation = navigator;
-window.top = window;
-window.self = window;
 
+
+delete __filename;
