@@ -57,6 +57,7 @@ class RshuVmp:
             js_url = urljoin(self.url, re.findall(r"""<script type="text/javascript" charset="utf-8" src="(.*?)" r='m'>""", res_text)[0])
             ts_code = re.findall(r"<script .*?>(.*?)</script>", res_text)[1]
             js_code = ts_code + self.session.get(js_url, verify=False, proxies=self.proxy, headers=self.session.headers, timeout=30).text
+            logger.debug("获取ts成功")
             return content, js_code
 
         return res.text, None
@@ -65,6 +66,7 @@ class RshuVmp:
         full_code = rs_ev.replace("动态content", self.content) + self.js_code + """
         function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};
         """
+        logger.debug("正在计算cookie")
         with VM() as vm:
             vm.run(full_code)
             cookie = vm.run('get_cookie()')
