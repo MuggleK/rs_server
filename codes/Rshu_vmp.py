@@ -5,7 +5,9 @@
 # @File    : Rshu_vmp.py
 
 import re
+import subprocess
 import time
+from functools import partial
 from traceback import format_exc
 from urllib.parse import urljoin
 
@@ -19,6 +21,8 @@ from utils.proxy import get_proxies
 from utils.user_agent import UserAgent
 
 urllib3.disable_warnings()
+
+subprocess.Popen = partial(subprocess.Popen, encoding='utf-8')
 
 with open('./resources/Rshu_vmp.js', 'r', encoding='utf-8')as f:
     rs_ev = f.read()

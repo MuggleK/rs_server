@@ -42,7 +42,7 @@ def test_5():
 def test_vmp():
     cookie_s = 'azSsQE5NvspcS'
     cookie_t = 'azSsQE5NvspcT'
-    base_url = 'http://www.xinjin.gov.cn/xjxrmzf/c125830/zt_List.shtml'
+    base_url = 'http://www.cdtf.gov.cn/gkml/xzgfxwj/column-index-1.shtml'
     data = {
         "url": base_url,
         "s": cookie_s,
