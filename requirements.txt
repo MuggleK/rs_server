@@ -6,4 +6,3 @@ itsdangerous==2.0.1
 gevent~=21.1.0
 gunicorn
 cchardet~=2.1.7
-node_vm2==0.3.7
