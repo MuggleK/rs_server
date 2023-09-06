@@ -15,10 +15,9 @@ def get_proxies(http2=False):
     @param http2: 默认http1.1规则
     @return:
     """
-
     protocol = 'http://'
     try:
-        proxy = httpx.get("http://192.168.4.155:5555/random").text.strip()
+        proxy = httpx.get("http://crawlab.qizhidao.net/proxies/random").text.strip()
         proxy = protocol + proxy
         if http2:
             return {protocol: proxy, 'https://': proxy}

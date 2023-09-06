@@ -1,0 +1,9 @@
+{
+  "name": "rs_server",
+  "version": "1.0.0",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "node-html-parser": "^6.1.6",
+    "vm2": "^3.9.19"
+  }
+}
