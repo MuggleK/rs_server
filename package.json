@@ -5,6 +5,5 @@
     "body-parser": "^1.20.2",
     "express": "^4.18.2",
     "node-html-parser": "^6.1.6",
-    "vm2": "^3.9.19"
   }
 }
