@@ -10,8 +10,8 @@ RUN mkdir -p /data/logs
 
 WORKDIR /usr/spider
 COPY . /usr/spider
-RUN pip install -U pip -i https://pypi.douban.com/simple/
-RUN pip install -r requirements.txt -i https://pypi.douban.com/simple/ &&\
+RUN pip install -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple &&\
     wget https://nodejs.org/dist/v14.15.4/node-v14.15.4-linux-x64.tar.xz &&\
     tar xf node-v14.15.4-linux-x64.tar.xz -C /opt/
 ENV PATH=$PATH:/opt/node-v14.15.4-linux-x64/bin
