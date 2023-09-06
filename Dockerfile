@@ -16,4 +16,6 @@ RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple 
     tar xf node-v14.15.4-linux-x64.tar.xz -C /opt/
 ENV PATH=$PATH:/opt/node-v14.15.4-linux-x64/bin
 
+RUN npm install
+
 ENV PYTHONPATH=/usr/spider
