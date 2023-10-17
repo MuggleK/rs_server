@@ -409,5 +409,5 @@ def xgl_search(keyword):
 
 
 if __name__ == '__main__':
-    zx_search(["张三", ""])
+    xgl_search(["张三", ""])
     # zx_detail("1602840522")

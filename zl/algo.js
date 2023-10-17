@@ -1,6 +1,6 @@
 const {parse} = require("node-html-parser");
 const fs = require("fs");
-const jsFileCode = fs.readFileSync('../zxgk/vmp_235/93W4UXnYb8SB.bbf9512.js', 'utf8');
+const jsFileCode = fs.readFileSync('./3lyVKWvJXsxS.ce3512e.js', 'utf8');
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50'; // zhongben 115版本用不了
 var _$id = new Array(255).fill(null);
@@ -2287,26 +2287,26 @@ function getCookie(cd, vars_arr, arr380_42, bigFunc, arr7CheckValue, captchaData
 
     function get_id2_arr() {
         index_value_map = {
-            '0': 203,
-            '1': 102,
-            '2': 224,
-            '3': 108,
-            '4': 180,
-            '5': 102,
-            '6': 181,
-            '7': 181,
-            '8': 126,
-            '10': 225,
-            '11': 208,
-            '13': 203,
-            '14': 240,
-            '15': 100,
-            '16': 127,
-            '18': 103,
-            '22': 0,
-            '25': 11,
-            '28': 103,
-            '32': 101
+            2: 225,
+            3: 127,
+            4: 100,
+            6: 11,
+            7: 101,
+            9: 103,
+            10: 203,
+            12: 108,
+            14: 0,
+            15: 240,
+            16: 126,
+            17: 181,
+            18: 180,
+            21: 203,
+            24: 102,
+            25: 208,
+            26: 181,
+            28: 102,
+            29: 224,
+            30: 103
         }
         _29_vname = String.fromCharCode(...arr_37_29)
         _30_vname = String.fromCharCode(...arr_37_30)
@@ -2507,6 +2507,11 @@ function getCookie(cd, vars_arr, arr380_42, bigFunc, arr7CheckValue, captchaData
     arr_37_17 = arr37[17];
     arr_37_19 = arr37[19];
     total_arr = [];
+
+    // fp
+    // fp_array = get_fp_array()
+    // total_arr = total_arr.concat([0, fp_array.length]).concat(fp_array);
+
     // id:3
     //     UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36';
     _$cv(_$eL(UA))
@@ -2551,15 +2556,20 @@ function getCookie(cd, vars_arr, arr380_42, bigFunc, arr7CheckValue, captchaData
     total_arr = total_arr.concat([7]).concat([arr7.length]).concat(arr7)
     //     console.log(total_arr, total_arr.length)
     // id:0
-    //     arr0 = [47];
-    //     arr0 = arr0.concat(id0_0).concat(id0_1).concat(id0_2).concat(id0_3).concat(id0_4)
-    //     total_arr = total_arr.concat([0]).concat([arr0.length]).concat(arr0);
+    // arr0 = [47];
+    // arr0 = arr0.concat(id0_0).concat(id0_1).concat(id0_2).concat(id0_3).concat(id0_4)
+    // total_arr = total_arr.concat([0]).concat([arr0.length]).concat(arr0);
     // 未检测的时候会传一个0
     arr0 = [0];
     total_arr = total_arr.concat([0]).concat([arr0.length]).concat(arr0)
-    //     console.log(total_arr, total_arr.length);
+        console.log(total_arr, total_arr.length);
     // id:6
-    arr6 = [1, 0, 0, 0, 0, 1];
+    arr6 = [
+        1,
+        Math.ceil(Math.random() * 100), Math.ceil(Math.random() * 255),
+        Math.ceil(Math.random() * 100), Math.ceil(Math.random() * 255),
+        1
+    ];
     arr6 = arr6.concat(id6_YWTU)
     _$_0(arr6, id6_YVTX)
     total_arr = total_arr.concat([6]).concat([arr6.length]).concat(arr6);
@@ -2725,7 +2735,7 @@ function get_param_from_index(indexCode, jsFileCode) {
         let func6 = func6Regex.exec(last_group)[1];
         const specialFuncNameRegex = /(_\$..)\(\d,\d\)/gm;
         let specialFuncName = specialFuncNameRegex.exec(last_group)[1];
-        const specialFuncIndexRegex = new RegExp(`function ${specialFuncName.replace("$", "\\$")}\\(_\\$..\\)\\s*\\{[^\\{]*\\[(\\d+)\\];\\s*\\}`)
+        const specialFuncIndexRegex = new RegExp(`function ${specialFuncName.replaceAll("$", "\\$")}\\(_\\$..\\)\\s*\\{[^\\{]*\\[(\\d+)\\];\\s*\\}`)
         let specialFuncIndex = specialFuncIndexRegex.exec(window.evalJs)[1];
         const arrayIndexRegex = /\[(0),\s*(1),\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*];/gm;
         let arrayIndex = arrayIndexRegex.exec(window.evalJs).splice(1, 9);
