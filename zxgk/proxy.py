@@ -6,7 +6,7 @@
 
 import httpx
 
-from utils import logger
+from loguru import logger
 
 
 def get_proxies(http2=False):
