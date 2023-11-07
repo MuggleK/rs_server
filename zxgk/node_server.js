@@ -1,4 +1,4 @@
-const logger = require('./utils/logger').logger('node_server.js', 'debug');
+const logger = require('/usr/spider/utils/logger').logger('node_server.js', 'debug');
 const express = require("express");
 const bodyParser = require("body-parser");
 const {calCookie, calSuffix} = require("./algo");

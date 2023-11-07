@@ -1,6 +1,6 @@
 const {parse} = require("node-html-parser");
 const fs = require("fs");
-const jsFileCode = fs.readFileSync('./zxgk/93W4UXnYb8SB.bbf9512.js', 'utf8');
+const jsFileCode = fs.readFileSync('/usr/spider/zxgk/93W4UXnYb8SB.bbf9512.js', 'utf8');
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50'; // zhongben 115版本用不了
 var _$id = new Array(255).fill(null);
