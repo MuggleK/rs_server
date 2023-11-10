@@ -2251,7 +2251,7 @@ function _$dj(_$dT, _$_u) {
             _$dT.push(_$_u & 255));
 }
 
-function getCookie(cd, vars_arr, arr380_42, bigFunc, arr7CheckValue, captchaData=null, checkyzmPath=null) {
+function getCookie(cd, vars_arr, arr380_42, bigFunc, arr7CheckValue, captchaData=null, checkyzmPath=null, index_value_map) {
     // captchaData 校验链接 eg: captchaId=f5df9111688f4c389ca04dad351fbb92&pCode=abce
     // checkyzmPath /zhixing/checkyzm?
 
@@ -2286,28 +2286,6 @@ function getCookie(cd, vars_arr, arr380_42, bigFunc, arr7CheckValue, captchaData
     }
 
     function get_id2_arr() {
-        index_value_map = {
-            '0': 203,
-            '1': 102,
-            '2': 224,
-            '3': 108,
-            '4': 180,
-            '5': 102,
-            '6': 181,
-            '7': 181,
-            '8': 126,
-            '10': 225,
-            '11': 208,
-            '13': 203,
-            '14': 240,
-            '15': 100,
-            '16': 127,
-            '18': 103,
-            '22': 0,
-            '25': 11,
-            '28': 103,
-            '32': 101
-        }
         _29_vname = String.fromCharCode(...arr_37_29)
         _30_vname = String.fromCharCode(...arr_37_30)
         _31_vname = String.fromCharCode(...arr_37_31)
@@ -2623,11 +2601,27 @@ function get_param_from_index(indexCode, jsFileCode) {
     }
 
     window.document = document;
+    window.navigator = {}
+    window.navigator.userAgent = "ua";
     window.eval = eval;
     location = {}
     window.location = location;
     window.top = window;
-    window.clearInterval = undefined;
+    localStorage = {
+        removeItem: function () {
+        },
+        getItem: function () {
+        }
+    };
+    sessionStorage = {
+        removeItem: function () {
+        },
+        getItem: function () {
+        }
+    };
+    window.localStorage = localStorage;
+    window.sessionStorage = sessionStorage;
+    window.name = '';
     window.setTimeout = function() {}
     window.setInterval = function() {}
     window.escape = escape;
@@ -2637,9 +2631,10 @@ function get_param_from_index(indexCode, jsFileCode) {
     window.Math = Math;
     window.RegExp = RegExp;
     window.DOMParser = function() {}
-    window.addEventListener = function() {}
-    ;
+    window.addEventListener = function() {};
     window.JSON = JSON;
+    window.HTMLFormElement = true;
+    window.HTMLAnchorElement = true;
 
     eval(indexCode)
 
@@ -2654,12 +2649,121 @@ function get_param_from_index(indexCode, jsFileCode) {
 
     // ============================= 拿到 arr380 =========================
     let arr380Regexp = /(_\$.{2})(.push\((?:_\$[\w\$]+,? ?){250,}\);)/gm;
-    let arr380RepStr = 'window.arr380=$1;window.arr380$2;return;';
+    let arr380RepStr = 'window.arr380=$1;window.arr380$2;';
     window.evalJs = window.evalJs.replace(arr380Regexp, arr380RepStr);
+
+    // =========================== 处理一下方便获取后续的 20 动态数组=========================
+    function insertStr(str, index, insertStr) {
+        return str.substring(0, index) + insertStr + str.substring(index)
+    }
+
+    // 计算20数组需要的三个函数
+    function fibonacci(n) {
+        let arr = [1, 1];
+        if (n === 0 || n === 1) {
+            return arr[n]
+        }
+        for (let i = 2; i < n + 1; i++) {
+            arr.push(arr[i - 1] + arr[i - 2])
+        }
+        return arr[n]
+    }
+
+    function factorial(n) {
+        if (n === 0) {
+            return 1
+        }
+        let res = 1;
+        for (let i = 1; i < n + 1; i++) {
+            res *= i;
+        }
+        return res;
+    }
+
+    function sum_n(n) {
+        // 前 n 求和
+        let res = 0;
+        for (let i = 0; i < n; i++) {
+            res += i
+        }
+        return res;
+    }
+
+    // 1. 添加返回点
+    let func20Regex = /("0":\d+,"1":\d+.*?\);)/gm;
+    let func20Substr = `$1return;`;
+    window.evalJs = window.evalJs.replace(func20Regex, func20Substr)
+
+    // 2. 获取bytecode函数
+    let func20LocationRegex = /(for\(.{4}=2;.*?\).*?=(.*?)\((.{4}).*?,(.{4}).*)function/gm;
+
+    let func20LocationExecRes = func20LocationRegex.exec(window.evalJs);
+    let func20CodeLocation = func20LocationExecRes[1];
+    let callFuncName = func20LocationExecRes[2];
+    let bytecodeArrName = func20LocationExecRes[3];
+    let callFuncParam2Name = func20LocationExecRes[4];
+    // 注入代码中不能有换行，不然影响其它参数的处理
+    let injectCode = `window.callFunc=${callFuncName};window.bytecodeArr=${bytecodeArrName};window.callFuncParam2=${callFuncParam2Name};`
+    window.evalJs = insertStr(window.evalJs, window.evalJs.indexOf(func20CodeLocation), injectCode);
 
     // window.arr380里是对应的380数组
     eval("window.arr380=[];" + window.evalJs);
     let arr380 = window.arr380;
+    let bytecodeArr = window.bytecodeArr;
+
+    function searchArr20Path(arr) {
+        // 目标是找到一个Object，里面的一个属性是20个对象的数组
+        // 第一层是数组，元素都是对象
+        // 第二层是对象的属性，属性里面去找值是数组的
+        // 第三层是数组的元素，元素是对象
+        // 第四层是对象的属性，属性里去找值是数组，并且length为20的
+        let path = [];
+        for (let floor_1 = 0; floor_1 < arr.length; floor_1++) {
+            let floor_1_ele = arr[floor_1];
+            if (!floor_1_ele || typeof floor_1_ele !== "object") {
+                continue
+            }
+            for (let floor_2_key of Object.keys(floor_1_ele)) {
+                let floor_2_ele = floor_1_ele[floor_2_key];
+                if (!floor_2_ele || !Array.isArray(floor_2_ele)) {
+                    continue
+                }
+                for (let floor_3 = 0; floor_3 < floor_2_ele.length; floor_3++) {
+                    let floor_3_ele = floor_2_ele[floor_3];
+                    if (!floor_3_ele || typeof floor_3_ele !== "object") {
+                        continue
+                    }
+                    for (let floor_4_key of Object.keys(floor_3_ele)) {
+                        let floor_4_ele = floor_3_ele[floor_4_key];
+                        if (floor_4_ele && !Array.isArray(floor_4_ele)) {
+                            continue
+                        }
+                        // 判断length
+                        if (floor_4_ele.length === 20) {
+                            path.push(floor_1, floor_2_key, floor_3, floor_4_key)
+                        }
+                    }
+                }
+            }
+        }
+        return path;
+    }
+
+    let path = searchArr20Path(bytecodeArr)
+    // 这里只需要拿到func20的父函数执行就行
+    let func20ParentFuncBytecode = bytecodeArr[path[0]][path[1]][path[2]];
+    let func20 = {};
+    window.callFuncParam2[3][2] = [];
+    window.callFuncParam2[3][2][2] = fibonacci;
+    window.callFuncParam2[3][2][3] = factorial;
+    window.callFuncParam2[3][2][4] = sum_n;
+    window.callFuncParam2[3][2][5] = func20;
+    window.callFunc(func20ParentFuncBytecode, window.callFuncParam2)(func20);
+    let index_value_map = {};
+    for (let name of Object.keys(func20)) {
+        let func = func20[name];
+        index_value_map[vars_arr.indexOf(name)] = func()
+    }
 
     // ========================== bigNumArr 最长的那个全是常数的数组 ============================
     function getBigNumArrayIndex() {
@@ -2725,7 +2829,7 @@ function get_param_from_index(indexCode, jsFileCode) {
         let func6 = func6Regex.exec(last_group)[1];
         const specialFuncNameRegex = /(_\$..)\(\d,\d\)/gm;
         let specialFuncName = specialFuncNameRegex.exec(last_group)[1];
-        const specialFuncIndexRegex = new RegExp(`function ${specialFuncName.replace("$", "\\$")}\\(_\\$..\\)\\s*\\{[^\\{]*\\[(\\d+)\\];\\s*\\}`)
+        const specialFuncIndexRegex = new RegExp(`function ${specialFuncName.replaceAll("$", "\\$")}\\(_\\$..\\)\\s*\\{[^\\{]*\\[(\\d+)\\];\\s*\\}`)
         let specialFuncIndex = specialFuncIndexRegex.exec(window.evalJs)[1];
         const arrayIndexRegex = /\[(0),\s*(1),\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*];/gm;
         let arrayIndex = arrayIndexRegex.exec(window.evalJs).splice(1, 9);
@@ -2760,14 +2864,15 @@ function get_param_from_index(indexCode, jsFileCode) {
         vars_arr: window.$_ts.cp[1],
         arr380_42: arr380[arr380_42Index],
         bigFunc: arr380[bigFuncIndex](),
-        arr7CheckValue: arr7CheckValue
+        arr7CheckValue: arr7CheckValue,
+        index_value_map: index_value_map
     }
 }
 
 function calCookie(html){
     let indexCode = parse(html).querySelector("script").innerText;
-    let {cd, vars_arr, arr380_42, bigFunc, arr7CheckValue} = get_param_from_index(indexCode, jsFileCode);
-    let {cookie, suffix} = getCookie(cd, vars_arr, arr380_42, bigFunc, arr7CheckValue);
+    let {cd, vars_arr, arr380_42, bigFunc, arr7CheckValue, index_value_map} = get_param_from_index(indexCode, jsFileCode);
+    let {cookie, suffix} = getCookie(cd, vars_arr, arr380_42, bigFunc, arr7CheckValue, index_value_map);
 
     return {cookie, suffix}
 }
@@ -2777,8 +2882,8 @@ function calSuffix(html, checkPath, postData) {
         postData = null
     }
     let indexCode = parse(html).querySelector("script").innerText;
-    let {cd, vars_arr, arr380_42, bigFunc, arr7CheckValue} = get_param_from_index(indexCode, jsFileCode);
-    let {cookie, suffix} = getCookie(cd, vars_arr, arr380_42, bigFunc, arr7CheckValue, postData, checkPath);
+    let {cd, vars_arr, arr380_42, bigFunc, arr7CheckValue, index_value_map} = get_param_from_index(indexCode, jsFileCode);
+    let {cookie, suffix} = getCookie(cd, vars_arr, arr380_42, bigFunc, arr7CheckValue, postData, checkPath, index_value_map);
 
     return {cookie, suffix}
 }
