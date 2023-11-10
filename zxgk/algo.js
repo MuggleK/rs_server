@@ -2829,7 +2829,6 @@ function get_param_from_index(indexCode, jsFileCode) {
         let func6 = func6Regex.exec(last_group)[1];
         const specialFuncNameRegex = /(_\$..)\(\d,\d\)/gm;
         let specialFuncName = specialFuncNameRegex.exec(last_group)[1];
-        console.log(specialFuncName)
         const specialFuncIndexRegex = new RegExp(`function ${specialFuncName.replaceAll("$", "\\$")}\\(_\\$..\\)\\s*\\{[^\\{]*\\[(\\d+)\\];\\s*\\}`)
         let specialFuncIndex = specialFuncIndexRegex.exec(window.evalJs)[1];
         const arrayIndexRegex = /\[(0),\s*(1),\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*_\$..\[(\d+)],?\s*];/gm;
