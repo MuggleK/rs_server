@@ -3,113 +3,108 @@
 # @Time    : 2022/6/13 17:06
 # @Author  : MuggleK
 # @File    : Rshu_vmp.py
-
+import asyncio
 import re
-import time
-from traceback import format_exc
 from urllib.parse import urljoin
 
-import cchardet
+import aiohttp
 import execjs
-import requests
+from aiohttp import ClientTimeout
 from loguru import logger
 from requests.packages import urllib3
 
 from utils.proxy import get_proxies
+from utils.tools import retry_with_reset_and_error_return
 from utils.user_agent import UserAgent
 
 urllib3.disable_warnings()
-
 
 with open('./resources/Rshu_vmp.js', 'r', encoding='utf-8')as f:
     rs_ev = f.read()
 
 
 class RshuVmp:
+    semaphore = None
+    cookie_80s = None
+    cookie_80t = None
 
-    def __init__(self, url, cookie_s, cookie_t, proxy=None):
+    def __init__(self, url, cookie_s, cookie_t, headers=None):
+        self.url = url
         self.cookie_name_1 = cookie_s
         self.cookie_name_2 = cookie_t
-        self.session = requests.session()
-        self.session.headers = {
+        self.headers = headers or {
             'Cache-Control': 'no-cache',
             'Connection': 'close',
-            'User-Agent': UserAgent()
+            'User-Agent': UserAgent(),
         }
-        self.proxy = proxy
-        self.url = url
-        self.cookie_80s = None
-        self.cookie_80t = None
-        self.content, self.js_code = self.get_content()
-        if self.js_code:
-            self.process_content()
 
-    def get_content(self):
-        res = self.session.get(self.url, verify=False, proxies=self.proxy, headers=self.session.headers, timeout=30)
-        res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
-        if res.status_code == 202 or res.status_code == 412:
-            self.cookie_80s = res.cookies.get_dict().get(self.cookie_name_1)
-            content = re.findall('<meta content="(.*?)">', res_text)[0].split('"')[0]
-            js_url = urljoin(self.url, re.findall(r"""<script type="text/javascript" charset="utf-8" src="(.*?)" r='m'>""", res_text)[0])
-            ts_code = re.findall(r"<script .*?>(.*?)</script>", res_text)[1]
-            js_code = ts_code + self.session.get(js_url, verify=False, proxies=self.proxy, headers=self.session.headers, timeout=30).text
-            return content, js_code
+    async def get_content(self, session, proxy):
+        async with self.semaphore:
+            async with session.get(self.url, ssl=False, proxy=proxy) as response:
+                base_text = await response.text()
+                if response.status == 202 or response.status == 412:
+                    self.cookie_80s = response.cookies.get(self.cookie_name_1).value
+                    content = re.findall('<meta content="(.*?)">', base_text)[0].split('"')[0]
+                    js_url = urljoin(self.url, re.findall(r"""<script type="text/javascript" charset=".*" src="(.*?)" r='m'>""", base_text)[0])
+                    ts_code = re.findall(r"<script .*?>(.*?)</script>", base_text)[1]
+                    js_code = ts_code + await self.get_dynamic_js(session, proxy, js_url)
+                    return content, js_code
 
-        return res.text, None
+        return base_text, None
 
-    def process_content(self):
-        full_code = rs_ev.replace("动态content", self.content) + self.js_code + """
-        function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};
-        """
+    async def get_dynamic_js(self, session, proxy, js_url):
+        async with self.semaphore:
+            async with session.get(js_url, ssl=False, proxy=proxy) as response:
+                js_code = await response.text()
+                return js_code
+
+    def process_headers(self, content, js_code):
+        full_code = rs_ev.replace("动态content", content) + js_code + """;function get_cookie(){return document.cookie.split(';')[0].split('=')[1];};"""
         ctx = execjs.compile(full_code)
         self.cookie_80t = ctx.call('get_cookie')
+        source_cookie = self.headers.get('Cookie', "") or self.headers.get('cookie', "")
+        rs_cookie = f'{self.cookie_name_1}={self.cookie_80s}; {self.cookie_name_2}={self.cookie_80t}'
+        if source_cookie and not source_cookie.endswith(";"):
+            source_cookie += ";"
+        self.headers["Cookie"] = source_cookie + rs_cookie if source_cookie else rs_cookie
+        self.headers["Referer"] = self.url
 
-    def verify(self):
-        if not self.js_code:
-            return self.content, None
-        self.session.headers.update({
-            'Cookie': f'{self.cookie_name_1}={self.cookie_80s}; {self.cookie_name_2}={self.cookie_80t}'
-        })
-        self.session.headers["Referer"] = self.url
-        res = self.session.get(url=self.url, headers=self.session.headers, proxies=self.proxy, timeout=30)
-        res_text = res.content.decode(cchardet.detect(res.content)["encoding"])
+    async def verify(self, session, proxy):
+        async with self.semaphore:
+            async with session.get(self.url, ssl=False, proxy=proxy, headers=self.headers) as response:
+                status_code = response.status
+                if status_code == 200:
+                    verify_text = await response.text()
+                    logger.info(f'{self.url}：状态码 200，Cookie可用')
+                    return verify_text
+                else:
+                    logger.error(f'{self.url}：状态码 {status_code}, Cookie不可用')
 
-        if res.status_code == 200:
-            logger.info(f'{self.url}：状态码{res.status_code}，Cookie可用')
-            return res_text, self.session.headers.get('Cookie')
-        else:
-            logger.debug(f'状态码{res.status_code},Cookie不可用')
-
-
-def run(base_url, cookie_s, cookie_t, proxy=None):
-    start_time = time.time()
-    for _ in range(3):
-        try:
-            logger.debug("开始获取ck：{}".format(base_url))
-            rs_vmp = RshuVmp(base_url, cookie_s, cookie_t, proxy)
-            rs_vmp_text, cookies = rs_vmp.verify()
-            if rs_vmp_text:
-                cost_time = format(time.time() - start_time, '.2f')
-                logger.debug(f'{base_url} Total Cost: {cost_time}s')
+    @retry_with_reset_and_error_return()
+    async def run(self, proxy=None):
+        proxy = proxy or await get_proxies()
+        self.semaphore = asyncio.Semaphore(50)
+        async with aiohttp.ClientSession(headers=self.headers, timeout=ClientTimeout(15)) as session:
+            content, js_code = await self.get_content(session, proxy['http'])
+            if not js_code:
                 return {
                     'msg': 'success',
                     'code': 200,
-                    'data': {'html': rs_vmp_text, 'cookie': cookies}
+                    'data': {'html': content, 'cookie': None}
                 }
-        except:
-            logger.error(f'当前url：{base_url}, {format_exc(limit=3)}')
-            time.sleep(0.5)
-            proxy = get_proxies()
 
-    return {
-        'msg': 'Max Retries Had Happened',
-        'code': 500,
-        'data': {'html': None}
-    }
+            self.process_headers(content, js_code)
+            verify_text = await self.verify(session, proxy['http'])
+            return {
+                'msg': 'success',
+                'code': 200,
+                'data': {'html': verify_text, 'cookie': self.headers["Cookie"]}
+            }
 
 
 if __name__ == '__main__':
-    cookie_s = 'azSsQE5NvspcS'
-    cookie_t = 'azSsQE5NvspcT'
-    base_url = 'http://www.shuangliu.gov.cn/slqzfmhwz/c122351/jy_list.shtml'
-    print(run(base_url, cookie_s, cookie_t))
+    cookie_s = 'NfBCSins2OywO'
+    cookie_t = 'NfBCSins2OywP'
+    base_url = 'https://www.nmpa.gov.cn/xxgk/ggtg/index.html'
+    spider = RshuVmp(base_url, cookie_s, cookie_t)
+    asyncio.get_event_loop().run_until_complete(spider.run())

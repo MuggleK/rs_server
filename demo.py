@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Project : rs_server
 # @Time    : 2022/3/19 14:56
-# @Author  : Changchuan.Pei
+# @Author  : MuggleK
 # @File    : demo.py
 
 import requests
@@ -25,30 +25,28 @@ def test_4():
 
 
 def test_5():
-    cookie_s = 'FSSBBIl1UgzbN7NS'
-    cookie_t = 'FSSBBIl1UgzbN7NT'
-    base_url = 'http://www.xiantao.gov.cn/zwgk/zfxxgk/zfwjk/gfwj/'
-    ts_url = 'http://www.xiantao.gov.cn/4QbVtADbnLVIc/c.FxJzG50F.b795048.js'
+    cookie_s = 'sVoELocvxVW0S'
+    cookie_t = 'sVoELocvxVW0T'
+    base_url = 'http://www.nhc.gov.cn/wjw/gfxwjj/list.shtml'
     data = {
         "url": base_url,
-        "ts_url": ts_url,
         "s": cookie_s,
         "t": cookie_t
     }
-    res = requests.post('http://192.168.9.3:5602/rs/5', data=data)
+    res = requests.post('http://127.0.0.1:5612/rs/5', data=data)
     print(res.json())
 
 
 def test_vmp():
-    cookie_s = 'azSsQE5NvspcS'
-    cookie_t = 'azSsQE5NvspcT'
-    base_url = 'http://www.cdtf.gov.cn/gkml/xzgfxwj/column-index-1.shtml'
+    cookie_s = 'NfBCSins2OywO'
+    cookie_t = 'NfBCSins2OywP'
+    base_url = 'https://www.nmpa.gov.cn/xxgk/ggtg/index.html'
     data = {
         "url": base_url,
         "s": cookie_s,
         "t": cookie_t,
     }
-    res = requests.post('http://192.168.9.3:5602/rs/vmp', data=data)
+    res = requests.post('http://127.0.0.1:5612/rs/vmp', data=data)
     print(res.json())
     return res.json()
 

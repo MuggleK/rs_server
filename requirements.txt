@@ -1,8 +1,10 @@
-Flask==2.0.3
-loguru~=0.6.0
+Flask
+loguru
 PyExecJS==1.5.1
-requests==2.24.0
+requests
 itsdangerous==2.0.1
-gevent~=21.1.0
+gevent
 gunicorn
-cchardet~=2.1.7
+cchardet
+aiohttp
+sanic

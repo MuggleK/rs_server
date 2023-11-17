@@ -34,4 +34,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.DOCKERHUB_REPOSITORY }}:process
+          tags: ${{ env.DOCKERHUB_REPOSITORY }}:latest

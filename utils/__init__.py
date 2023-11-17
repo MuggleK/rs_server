@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Project : rs_server
 # @Time    : 2022/3/19 14:56
-# @Author  : Changchuan.Pei
+# @Author  : MuggleK
 # @File    : __init__.py
-import os
+from .log import Logging
 
-PROJECT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-
-if __name__ == '__main__':
-    pass
+logger = Logging()

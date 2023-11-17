@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Project : rs_server
 # @Time    : 2022/3/19 15:01
-# @Author  : Changchuan.Pei
+# @Author  : MuggleK
 # @File    : Rshu_6.py
 
 import execjs

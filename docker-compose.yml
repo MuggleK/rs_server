@@ -5,6 +5,6 @@ services:
     build: .
     network_mode: "host"
     volumes:
-      - "/data/logs/rs_server:/usr/spider/logs"
+      - "/data/logs/rs_server:/usr/src/app/logs"
     container_name: rs_server
-    entrypoint: ["/usr/local/bin/gunicorn", "--config", "gunicorn.py", "wsgi:app"]
+    entrypoint: ["python3", "app.py"]

@@ -1,151 +1,77 @@
 # -*- coding: utf-8 -*-
 # @Project : rs_server
 # @Time    : 2022/3/19 14:56
-# @Author  : Changchuan.Pei
+# @Author  : MuggleK
 # @File    : app.py
+import functools
+import json as s_json
+import time
 
-from flask import Flask, request
-import logging
-import json
-from codes.Rshu_4 import run as run4
-from codes.Rshu_5 import run as run5
-from codes.Rshu_6 import run as run6
-from codes.Rshu_vmp import run as run_vmp
+from sanic import Sanic, json
 
-app = Flask(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-LOGGER = logging.getLogger(__name__)
+from codes.Rshu_5 import Rshu5
+from codes.Rshu_vmp import RshuVmp
+from utils import logger
 
-
-@app.route('/rs/4', methods=['POST', 'GET'])
-def rs4_serer():
-    if request.method == 'POST':
-        data = request.form
-        proxy = data.get('proxy', None)
-        if proxy:
-            proxy = json.loads(proxy)
-        req_url = data.get('url', None)
-        ts_url = data.get('ts_url', None)
-        cookie_s = data.get('s', None)
-        cookie_t = data.get('t', None)
-    elif request.method == 'GET':
-        proxy = request.args.get("proxy")
-        if proxy:
-            proxy = json.loads(proxy)
-        req_url = request.args.get("url")
-        ts_url = request.args.get("ts_url")
-        cookie_s = request.args.get("s")
-        cookie_t = request.args.get("t")
-    else:
-        return '未支持的请求方式'
-    res = {}
-    if not req_url:
-        msg = "Need Request Url Param!"
-        code = 400
-        res['msg'] = msg
-        res['code'] = code
-        res['data'] = None
-    else:
-        res = run4(req_url, ts_url, cookie_s, cookie_t, proxy)
-    return res
+app = Sanic("RsServer")
 
 
-@app.route('/rs/5', methods=['POST', 'GET'])
-def rs5_serer():
-    if request.method == 'POST':
-        data = request.form
-        proxy = data.get('proxy', None)
-        if proxy:
-            proxy = json.loads(proxy)
-        req_url = data.get('url', None)
-        ts_url = data.get('ts_url', None)
-        cookie_s = data.get('s', None)
-        cookie_t = data.get('t', None)
-    elif request.method == 'GET':
-        proxy = request.args.get("proxy")
-        if proxy:
-            proxy = json.loads(proxy)
-        req_url = request.args.get("url")
-        ts_url = request.args.get("ts_url")
-        cookie_s = request.args.get("s")
-        cookie_t = request.args.get("t")
-    else:
-        return '未支持的请求方式'
-    res = {}
-    if not req_url:
-        msg = "Need Request Url Param!"
-        code = 400
-        res['msg'] = msg
-        res['code'] = code
-        res['data'] = None
-    else:
-        res = run5(req_url, ts_url, cookie_s, cookie_t, proxy)
-    return res
+# Define the timing decorator
+def with_timing():
+    def decorator(f):
+        @functools.wraps(f)
+        async def decorated_function(request, *args, **kwargs):
+            start_time = time.time()
+            try:
+                response = await f(request, *args, **kwargs)
+                return response
+            finally:
+                end_time = time.time()
+                duration = end_time - start_time
+                logger.info(f"Endpoint '{request.endpoint}' executed in {duration:.4f} seconds")
+        return decorated_function
+    return decorator
 
 
-@app.route('/rs/6', methods=['POST', 'GET'])
-def rs6_serer():
-    if request.method == 'POST':
-        data = request.form
-        proxy = data.get('proxy', None)
-        if proxy:
-            proxy = json.loads(proxy)
-        req_url = data.get('url', None)
-        ts_url = data.get('ts_url', None)
-        cookie_s = data.get('s', None)
-        cookie_t = data.get('t', None)
-    elif request.method == 'GET':
-        proxy = request.args.get("proxy")
-        if proxy:
-            proxy = json.loads(proxy)
-        req_url = request.args.get("url")
-        ts_url = request.args.get("ts_url")
-        cookie_s = request.args.get("s")
-        cookie_t = request.args.get("t")
-    else:
-        return '未支持的请求方式'
-    res = {}
-    if not req_url:
-        msg = "Need Request Url Param!"
-        code = 400
-        res['msg'] = msg
-        res['code'] = code
-        res['data'] = None
-    else:
-        res = run6(req_url, ts_url, cookie_s, cookie_t, proxy)
-    return res
+@app.route("/rs/5", name="rs_5_verify", methods=["POST"])
+@with_timing()
+async def rs5_verify(request):
+    proxy = request.form.get("proxy")
+    if proxy:
+        proxy = s_json.loads(proxy)
+    req_url = request.form.get("url")
+    cookie_s = request.form.get("s")
+    cookie_t = request.form.get("t")
+    headers = request.form.get("headers")
+    if headers:
+        headers = s_json.loads(headers)
+    if not (req_url and cookie_s and cookie_t):
+        return json({"msg": "need url,cookie_s,cookie_t param!", "code": 400, "data": None})
+
+    spider = Rshu5(req_url, cookie_s, cookie_t, headers)
+    res = await spider.run(proxy)
+    return json(res)
 
 
-@app.route('/rs/vmp', methods=['POST', 'GET'])
-def rs_vmp_serer():
-    if request.method == 'POST':
-        data = request.form
-        proxy = data.get('proxy', None)
-        if proxy:
-            proxy = json.loads(proxy)
-        req_url = data.get('url', None)
-        cookie_s = data.get('s', None)
-        cookie_t = data.get('t', None)
-    elif request.method == 'GET':
-        proxy = request.args.get("proxy")
-        if proxy:
-            proxy = json.loads(proxy)
-        req_url = request.args.get("url")
-        cookie_s = request.args.get("s")
-        cookie_t = request.args.get("t")
-    else:
-        return '未支持的请求方式'
-    res = {}
-    if not req_url:
-        msg = "Need Request Url Param!"
-        code = 400
-        res['msg'] = msg
-        res['code'] = code
-        res['data'] = None
-    else:
-        res = run_vmp(req_url, cookie_s, cookie_t, proxy)
-    return res
+@app.route("/rs/vmp", name="rs_vmp_verify", methods=["POST"])
+@with_timing()
+async def vmp_verify(request):
+    proxy = request.form.get("proxy")
+    if proxy:
+        proxy = s_json.loads(proxy)
+    req_url = request.form.get("url")
+    cookie_s = request.form.get("s")
+    cookie_t = request.form.get("t")
+    headers = request.form.get("headers")
+    if headers:
+        headers = s_json.loads(headers)
+    if not (req_url and cookie_s and cookie_t):
+        return json({"msg": "need url,cookie_s,cookie_t param!", "code": 400, "data": None})
+
+    spider = RshuVmp(req_url, cookie_s, cookie_t, headers)
+    res = await spider.run(proxy)
+    return json(res)
 
 
 if __name__ == '__main__':
-    app.run(port=5602, host="0.0.0.0", threaded=True, debug=False)
+    app.run(port=5602, host='0.0.0.0', auto_reload=True, workers=5, backlog=2000, access_log=True)
