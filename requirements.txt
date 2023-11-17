@@ -2,6 +2,7 @@ Flask
 loguru
 PyExecJS==1.5.1
 requests
+urllib3==1.26.12
 itsdangerous==2.0.1
 gevent
 gunicorn

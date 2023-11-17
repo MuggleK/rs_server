@@ -74,4 +74,4 @@ async def vmp_verify(request):
 
 
 if __name__ == '__main__':
-    app.run(port=5602, host='0.0.0.0', auto_reload=True, workers=5, backlog=2000, access_log=True)
+    app.run(port=5602, host='0.0.0.0', auto_reload=True, workers=4, backlog=2000, access_log=True)
