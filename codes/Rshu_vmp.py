@@ -42,8 +42,9 @@ class RshuVmp:
         async with self.semaphore:
             async with session.get(self.url, ssl=False, proxy=proxy) as response:
                 base_text = await response.text()
-                if (response.status == 202 or response.status == 412) and response.cookies:
-                    self.cookie_80s = response.cookies.get(self.cookie_name_1).value
+                if response.status == 202 or response.status == 412:
+                    if response.cookies:    # cookie_s可能没有值
+                        self.cookie_80s = response.cookies.get(self.cookie_name_1).value
                     content = re.findall('<meta content="(.*?)">', base_text)[0].split('"')[0]
                     js_url = urljoin(self.url, re.findall(r"""<script type="text/javascript" charset=".*" src="(.*?)" r='m'>""", base_text)[0])
                     ts_code = re.findall(r"<script .*?>(.*?)</script>", base_text)[1]
@@ -103,8 +104,8 @@ class RshuVmp:
 
 
 if __name__ == '__main__':
-    cookie_s = 'NfBCSins2OywO'
-    cookie_t = 'NfBCSins2OywP'
-    base_url = 'https://www.nmpa.gov.cn/xxgk/ggtg/index.html'
+    cookie_s = '924omrTVcFchO'
+    cookie_t = '924omrTVcFchP'
+    base_url = 'https://dfjrjgj.hubei.gov.cn/zfxxgk_GK2020/fdzdgknr_GK2020/gysyjs_GK2020/hmhq/202308/t20230803_4780792.shtml'
     spider = RshuVmp(base_url, cookie_s, cookie_t)
     asyncio.get_event_loop().run_until_complete(spider.run())

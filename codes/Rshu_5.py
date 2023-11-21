@@ -47,8 +47,9 @@ class Rshu5:
         async with self.semaphore:
             async with session.get(self.url, ssl=False, proxy=proxy) as response:
                 base_text = await response.text()
-                if (response.status == 202 or response.status == 412) and response.cookies:
-                    self.cookie_80s = response.cookies.get(self.cookie_name_1).value
+                if response.status == 202 or response.status == 412:
+                    if response.cookies:
+                        self.cookie_80s = response.cookies.get(self.cookie_name_1).value
                     content = re.findall('<meta content="(.*?)">', base_text)[0].split('"')[0]
                     js_code = re.findall(r'(\(function\(\).*\(\))</script>', base_text)[0]
                     js_url = urljoin(self.url, re.findall(r"""<script type="text/javascript" charset=".*" src="(.*?)" r='m'>""", base_text)[0])
