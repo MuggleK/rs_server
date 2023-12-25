@@ -57,12 +57,12 @@ def sx_search(keyword):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/shixin", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
-        "html": index_html.text,
-        "checkPath": pathname
+    api_json = requests.post("http://127.0.0.1:5678/houzhui", data={
+        "source": index_html.text,
+        "url": pathname
     }).json()
     session.cookies.update({
-        "lqWVdQzgOVyaT": api_json.get("cookie"),
+        "lqWVdQzgOVyaT": api_json.get("ck"),
     })
 
     code = cap_verify(cap_id, cap_pathname, session)
@@ -80,7 +80,7 @@ def sx_search(keyword):
     }
     req_url = f'http://zxgk.court.gov.cn{pathname}'
     search_list_res = session.post(
-        url=req_url, data=search_list_data, params={'vG5nbKcB': api_json.get("suffix")},
+        url=req_url, data=search_list_data, params={'vG5nbKcB': api_json.get("houzhui")},
         timeout=10, verify=False
     )
     if search_list_res.status_code != 200:
@@ -114,25 +114,25 @@ def sx_detail(detail_id, detail_code):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/shixin/", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
-        "html": index_html.text,
-        "checkPath": pathname
+    api_json = requests.post("http://127.0.0.1:5678/houzhui", data={
+        "source": index_html.text,
+        "url": pathname
     }).json()
     session.cookies.update({
-        "lqWVdQzgOVyaT": api_json.get("cookie"),
+        "lqWVdQzgOVyaT": api_json.get("ck"),
     })
     code = cap_verify(cap_id, cap_pathname, session)
 
     post_data = f'id={detail_id}&caseCode={quote(detail_code, safe="/()")}&pCode={code}&captchaId={cap_id}'
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
-        "html": index_html.text,
-        "checkPath": pathname,
-        'postData': post_data
+    api_json = requests.post("http://127.0.0.1:5678/houzhui", data={
+        "source": index_html.text,
+        "url": pathname,
+        'data': post_data
     }).json()
     session.cookies.update({
-        "lqWVdQzgOVyaT": api_json.get("cookie"),
+        "lqWVdQzgOVyaT": api_json.get("ck"),
     })
-    search_detail_url = f'http://zxgk.court.gov.cn/shixin/disDetailNew?vG5nbKcB={api_json.get("suffix")}'
+    search_detail_url = f'http://zxgk.court.gov.cn/shixin/disDetailNew?vG5nbKcB={api_json.get("houzhui")}'
     search_res = session.get(url=search_detail_url)
 
     logger.info(search_res.status_code)
@@ -162,12 +162,12 @@ def zb_search(keyword):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/zhongben", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
-        "html": index_html.text,
-        "checkPath": pathname
+    api_json = requests.post("http://127.0.0.1:5678/houzhui", data={
+        "source": index_html.text,
+        "url": pathname
     }).json()
     session.cookies.update({
-        "lqWVdQzgOVyaT": api_json.get("cookie"),
+        "lqWVdQzgOVyaT": api_json.get("ck"),
     })
 
     code = cap_verify(cap_id, cap_pathname, session)
@@ -185,7 +185,7 @@ def zb_search(keyword):
     }
     req_url = f'http://zxgk.court.gov.cn{pathname}'
     search_list_res = session.post(
-        url=req_url, data=search_list_data, params={'vG5nbKcB': api_json.get("suffix")},
+        url=req_url, data=search_list_data, params={'vG5nbKcB': api_json.get("houzhui")},
         timeout=10, verify=False
     )
     if search_list_res.status_code != 200:
@@ -194,6 +194,7 @@ def zb_search(keyword):
     for item in search_list_res.json()[0].get('result'):
         logger.debug(f"searching id -> {item.get('id')}")
         zb_detail(item.get('id'))
+        break
 
 
 def zb_detail(detail_id):
@@ -218,22 +219,22 @@ def zb_detail(detail_id):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/zhongben", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
-        "html": index_html.text,
-        "checkPath": pathname
+    api_json = requests.post("http://127.0.0.1:5678/houzhui", data={
+        "source": index_html.text,
+        "url": pathname
     }).json()
     session.cookies.update({
-        "lqWVdQzgOVyaT": api_json.get("cookie"),
+        "lqWVdQzgOVyaT": api_json.get("ck"),
     })
     code = cap_verify(cap_id, cap_pathname, session)
 
     post_data = f'id={detail_id}&j_captcha={code}&captchaId={cap_id}'
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
-        "html": index_html.text,
-        "checkPath": pathname,
-        'postData': post_data
+    api_json = requests.post("http://127.0.0.1:5678/houzhui", data={
+        "source": index_html.text,
+        "url": pathname,
+        'data': post_data
     }).json()
-    search_detail_url = f'http://zxgk.court.gov.cn/zhongben/searchZbDetail?vG5nbKcB={api_json.get("suffix")}'
+    search_detail_url = f'http://zxgk.court.gov.cn/zhongben/searchZbDetail?vG5nbKcB={api_json.get("houzhui")}'
     search_res = session.get(url=search_detail_url)
 
     logger.info(search_res.status_code)
@@ -263,12 +264,12 @@ def zx_search(keyword):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/zhixing", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
-        "html": index_html.text,
-        "checkPath": pathname
+    api_json = requests.post("http://127.0.0.1:5678/houzhui", data={
+        "source": index_html.text,
+        "url": pathname
     }).json()
     session.cookies.update({
-        "lqWVdQzgOVyaT": api_json.get("cookie"),
+        "lqWVdQzgOVyaT": api_json.get("ck"),
     })
 
     code = cap_verify(cap_id, cap_pathname, session)
@@ -286,7 +287,7 @@ def zx_search(keyword):
     }
     req_url = f'http://zxgk.court.gov.cn{pathname}'
     search_list_res = session.post(
-        url=req_url, data=search_list_data, params={'vG5nbKcB': api_json.get("suffix")},
+        url=req_url, data=search_list_data, params={'vG5nbKcB': api_json.get("houzhui")},
         timeout=10, verify=False
     )
     if search_list_res.status_code != 200:
@@ -320,25 +321,25 @@ def zx_detail(detail_id):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/zhixing", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
-        "html": index_html.text,
-        "checkPath": pathname
+    api_json = requests.post("http://127.0.0.1:5678/houzhui", data={
+        "source": index_html.text,
+        "url": pathname
     }).json()
     session.cookies.update({
-        "lqWVdQzgOVyaT": api_json.get("cookie"),
+        "lqWVdQzgOVyaT": api_json.get("ck"),
     })
     code = cap_verify(cap_id, cap_pathname, session)
 
     post_data = f'id={detail_id}&j_captcha={code}&captchaId={cap_id}&_={int(time.time() * 1000)}'
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
-        "html": index_html.text,
-        "checkPath": pathname,
-        'postData': post_data
+    api_json = requests.post("http://127.0.0.1:5678/houzhui", data={
+        "source": index_html.text,
+        "url": pathname,
+        'data': post_data
     }).json()
     session.cookies.update({
-        "lqWVdQzgOVyaT": api_json.get("cookie"),
+        "lqWVdQzgOVyaT": api_json.get("ck"),
     })
-    search_detail_url = f'http://zxgk.court.gov.cn{pathname}vG5nbKcB={api_json.get("suffix")}'
+    search_detail_url = f'http://zxgk.court.gov.cn{pathname}vG5nbKcB={api_json.get("houzhui")}'
     search_res = session.get(url=search_detail_url)
 
     logger.info(search_res.status_code)
@@ -368,12 +369,12 @@ def xgl_search(keyword):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/xgl/", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
-        "html": index_html.text,
-        "checkPath": pathname
+    api_json = requests.post("http://127.0.0.1:5678/houzhui", data={
+        "source": index_html.text,
+        "url": pathname
     }).json()
     session.cookies.update({
-        "lqWVdQzgOVyaT": api_json.get("cookie"),
+        "lqWVdQzgOVyaT": api_json.get("ck"),
     })
 
     code = cap_verify(cap_id, cap_pathname, session)
@@ -392,7 +393,7 @@ def xgl_search(keyword):
     }
     req_url = f'http://zxgk.court.gov.cn{pathname}'
     search_list_res = session.post(
-        url=req_url, data=search_list_data, params={'vG5nbKcB': api_json.get("suffix")},
+        url=req_url, data=search_list_data, params={'vG5nbKcB': api_json.get("houzhui")},
         timeout=10, verify=False
     )
     if search_list_res.status_code != 200:
@@ -410,5 +411,6 @@ def xgl_search(keyword):
 
 if __name__ == '__main__':
     # xgl_search(["张三", ""])
-    # zx_detail("1602840522")
-    zx_search(["张三", ""])
+    # zx_search(["张三", ""])
+    # sx_search(["张三", ""])
+    zb_search(["张三", ""])

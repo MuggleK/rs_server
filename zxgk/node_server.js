@@ -26,27 +26,27 @@ if (cluster.isMaster) {
         cluster.fork();
     });
 } else {
-    app.post("/cookie", (req, res) => {
-        let {cookie} = calCookie(req.body.html)
+    app.post("/ck", (req, res) => {
+        let {cookie} = calCookie(req.body.source)
         logger.debug("获取cookie：", cookie)
         res.send({
-            "cookie": cookie,
+            "ck": cookie,
         })
     })
 
-    app.post("/suffix", (req, res) => {
+    app.post("/houzhui", (req, res) => {
         let {cookie, suffix} = calSuffix(
-            req.body.html, req.body.checkPath, req.body.postData
+            req.body.source, req.body.url, req.body.data
         )
         logger.debug("获取cookie suffix：", cookie, suffix);
         res.send({
-            "cookie": cookie,
-            "suffix": suffix
+            "ck": cookie,
+            "houzhui": suffix
         })
     })
 
     /**************************************启动服务**************************************/
-    const port = 5699; // 替换为你希望的端口号
+    const port = 5678; // 替换为你希望的端口号
     const server = app.listen(port, () => {
         console.log(`Worker ${cluster.worker.id} is listening on port ${port}`);
         logger.debug(`瑞数加密服务启动, 监听地址为: http://localhost:${port}`);

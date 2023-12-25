@@ -6,5 +6,5 @@ services:
     network_mode: "host"
     volumes:
       - "/data/logs/zxgk_server:/usr/spider/logs"
-    container_name: zxgk_server
+    container_name: zxgk_hd_server
     entrypoint: ["node", "/usr/spider/zxgk/node_server.js"]
