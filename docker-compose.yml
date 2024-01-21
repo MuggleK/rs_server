@@ -3,6 +3,11 @@ version: "3.9"
 services:
   server:
     build: .
+    logging:
+      driver: json-file
+      options:
+        max-size: "5g"
+        max-file: "5"
     network_mode: "host"
     volumes:
       - "/data/logs/zxgk_server:/usr/spider/logs"
