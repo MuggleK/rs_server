@@ -3,8 +3,10 @@
 # @Time    : 2023/9/5 10:53
 # @Author  : MuggleK
 # @File    : demo.py
+import base64
 import json
 import random
+import re
 import time
 from urllib.parse import quote
 
@@ -16,6 +18,32 @@ from zxgk.proxy import get_proxies
 
 ocr = ddddocr.DdddOcr(beta=True)
 map_code = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+
+def decrypt_wzws(host, scheme, first_text):
+
+    def calculate_value(x, i):
+        G = 0
+        for char in x:
+            G += ord(char)
+        G *= int(i)
+        G += 111111
+        return G
+
+    waf_params = re.findall(r".{1}='(.*?)'", first_text)
+    start_index = waf_params.index([i for i in waf_params if i.startswith("/W")][0])
+    waf_params = waf_params[start_index:start_index + 7]
+    y_info = re.findall(r"Y='(.*?)'", first_text)
+
+    challenge = base64_encode(f"WZWS_CONFIRM_PREFIX_LABEL{calculate_value(waf_params[1], waf_params[2])}")
+    infos = base64_encode('{"hostname":"%s","scheme":"%s","verify":"%s"}' % (host, scheme, y_info[0]))
+
+    new_url = f'{scheme}://{host}{waf_params[0]}?wzwschallenge={challenge}&wzwsinfos={infos}'
+    return new_url
+
+
+def base64_encode(data):
+    return base64.b64encode(data.encode()).decode()
 
 
 def cap_verify(captcha_id, cap_pathname, session):
@@ -57,7 +85,7 @@ def sx_search(keyword):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/shixin", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
+    api_json = requests.post("http://125.122.28.68:5699/suffix", data={
         "html": index_html.text,
         "checkPath": pathname
     }).json()
@@ -114,7 +142,7 @@ def sx_detail(detail_id, detail_code):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/shixin/", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
+    api_json = requests.post("http://125.122.28.68:5699/suffix", data={
         "html": index_html.text,
         "checkPath": pathname
     }).json()
@@ -124,7 +152,7 @@ def sx_detail(detail_id, detail_code):
     code = cap_verify(cap_id, cap_pathname, session)
 
     post_data = f'id={detail_id}&caseCode={quote(detail_code, safe="/()")}&pCode={code}&captchaId={cap_id}'
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
+    api_json = requests.post("http://125.122.28.68:5699/suffix", data={
         "html": index_html.text,
         "checkPath": pathname,
         'postData': post_data
@@ -162,7 +190,7 @@ def zb_search(keyword):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/zhongben", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
+    api_json = requests.post("http://125.122.28.68:5699/suffix", data={
         "html": index_html.text,
         "checkPath": pathname
     }).json()
@@ -218,7 +246,7 @@ def zb_detail(detail_id):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/zhongben", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
+    api_json = requests.post("http://125.122.28.68:5699/suffix", data={
         "html": index_html.text,
         "checkPath": pathname
     }).json()
@@ -228,7 +256,7 @@ def zb_detail(detail_id):
     code = cap_verify(cap_id, cap_pathname, session)
 
     post_data = f'id={detail_id}&j_captcha={code}&captchaId={cap_id}'
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
+    api_json = requests.post("http://125.122.28.68:5699/suffix", data={
         "html": index_html.text,
         "checkPath": pathname,
         'postData': post_data
@@ -263,7 +291,7 @@ def zx_search(keyword):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/zhixing", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
+    api_json = requests.post("http://125.122.28.68:5699/suffix", data={
         "html": index_html.text,
         "checkPath": pathname
     }).json()
@@ -320,7 +348,7 @@ def zx_detail(detail_id):
     session.proxies = proxy
     index_html = session.get("http://zxgk.court.gov.cn/zhixing", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
+    api_json = requests.post("http://125.122.28.68:5699/suffix", data={
         "html": index_html.text,
         "checkPath": pathname
     }).json()
@@ -330,7 +358,7 @@ def zx_detail(detail_id):
     code = cap_verify(cap_id, cap_pathname, session)
 
     post_data = f'id={detail_id}&j_captcha={code}&captchaId={cap_id}&_={int(time.time() * 1000)}'
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
+    api_json = requests.post("http://125.122.28.68:5699/suffix", data={
         "html": index_html.text,
         "checkPath": pathname,
         'postData': post_data
@@ -366,9 +394,16 @@ def xgl_search(keyword):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50"
     }
     session.proxies = proxy
-    index_html = session.get("http://zxgk.court.gov.cn/xgl/", timeout=10, verify=False)
+    index_html = session.get("http://zxgk.court.gov.cn/xgl/", timeout=10, verify=False, allow_redirects=False)
+    if index_html.status_code == 302:
+        new_url = decrypt_wzws('zxgk.court.gov.cn', 'http', index_html.text)
+        session.get(new_url, timeout=10, verify=False)
+        session.cookies.update({
+            "wzws_cid": session.cookies.get_dict().get("wzws_cid"),
+        })
+        index_html = session.get("http://zxgk.court.gov.cn/xgl/", timeout=10, verify=False)
 
-    api_json = requests.post("http://127.0.0.1:5699/suffix", data={
+    api_json = requests.post("http://125.122.28.68:5699/suffix", data={
         "html": index_html.text,
         "checkPath": pathname
     }).json()
@@ -409,6 +444,6 @@ def xgl_search(keyword):
 
 
 if __name__ == '__main__':
-    # xgl_search(["张三", ""])
+    xgl_search(["张三", ""])
     # zx_detail("1602840522")
-    zx_search(["张三", ""])
+    # zx_search(["张三", ""])
