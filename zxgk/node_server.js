@@ -11,7 +11,7 @@ app.use(bodyParser.json({limit: "1000mb"}));
 
 // 通过 cluster.isMaster 判断当前是否为主进程
 if (cluster.isMaster) {
-    const numCPUs = os.cpus().length;
+    const numCPUs = os.cpus().length - 2;
 
     console.log(`Master ${process.pid} is running`);
 
@@ -27,7 +27,17 @@ if (cluster.isMaster) {
     });
 } else {
     app.post("/cookie", (req, res) => {
-        let {cookie} = calCookie(req.body.html)
+        let html = req.body.html
+        if(html.indexOf("$_ts.cd") == -1){
+            logger.error("River Security html is Error")
+            res.send({
+                "cookie": null,
+                "suffix": null,
+                "error_message": "Please post the current html of River Security"
+            })
+            return false
+        }
+        let {cookie} = calCookie(html)
         logger.debug("获取cookie：", cookie)
         res.send({
             "cookie": cookie,
@@ -35,8 +45,18 @@ if (cluster.isMaster) {
     })
 
     app.post("/suffix", (req, res) => {
+        let html = req.body.html
+        if(html.indexOf("$_ts.cd") == -1){
+            logger.error("River Security html is Error")
+            res.send({
+                "cookie": null,
+                "suffix": null,
+                "error_message": "Please post the current html of River Security"
+            })
+            return false
+        }
         let {cookie, suffix} = calSuffix(
-            req.body.html, req.body.checkPath, req.body.postData
+            html, req.body.checkPath, req.body.postData
         )
         logger.debug("获取cookie suffix：", cookie, suffix);
         res.send({
